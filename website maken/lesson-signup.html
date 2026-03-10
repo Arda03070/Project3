@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Les Inschrijven - FitForFun</title>
+
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/auth.css">
+
+</head>
+
+<body>
+
+<header>
+
+<div class="header-content">
+<div class="logo">FitForFun</div>
+<nav>
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="lessen.html">Lessen</a></li>
+<li><a href="../login.php">Inloggen</a></li>
+<li><a href="../register.php">Registreren</a></li>
+</ul>
+</nav>
+</div>
+
+</header>
+
+<main class="auth-main">
+
+<div class="auth-container">
+
+<div class="auth-form">
+
+<h1>Les Inschrijven</h1>
+
+<div id="lessonInfo" class="lesson-info">
+<!-- Les informatie wordt hier getoond -->
+</div>
+
+<form id="signupForm">
+
+<div class="form-group">
+<label for="voornaam">Voornaam *</label>
+<input type="text" id="voornaam" required>
+</div>
+
+<div class="form-group">
+<label for="achternaam">Achternaam *</label>
+<input type="text" id="achternaam" required>
+</div>
+
+<div class="form-group">
+<label for="email">Email *</label>
+<input type="email" id="email" required>
+</div>
+
+<div class="form-group">
+<label for="telefoon">Telefoonnummer *</label>
+<input type="tel" id="telefoon" required>
+</div>
+
+<div class="form-group">
+<label for="geboortedatum">Geboortedatum *</label>
+<input type="date" id="geboortedatum" required>
+</div>
+
+<div class="form-group">
+<label for="adres">Adres *</label>
+<input type="text" id="adres" required>
+</div>
+
+<div class="form-group">
+<label for="stad">Stad *</label>
+<input type="text" id="stad" required>
+</div>
+
+<div class="form-group">
+<label for="postcode">Postcode *</label>
+<input type="text" id="postcode" required>
+</div>
+
+<div class="form-group">
+<label for="maanden">Aantal maanden *</label>
+<input type="number" id="maanden" min="1" value="1" required>
+</div>
+
+<div class="form-group">
+<p class="price-info">Totale kosten: <span id="totalPrice" class="total-price">€0</span></p>
+</div>
+
+<div class="form-group">
+<label for="opmerkingen">Opmerkingen (optioneel)</label>
+<textarea id="opmerkingen" rows="3" placeholder="Bijv. allergieën, blessures, etc."></textarea>
+</div>
+
+<div class="form-group checkbox-group">
+<input type="checkbox" id="voorwaarden" required>
+<label for="voorwaarden">Ik accepteer de <a href="#" target="_blank">algemene voorwaarden</a> *</label>
+</div>
+
+<button type="submit" class="auth-btn">Inschrijven voor Les</button>
+
+</form>
+
+<div class="auth-links">
+<p><a href="lessen.html">← Terug naar Lessen</a></p>
+</div>
+
+
+<div class="burger" onclick="toggleMenu()">☰</div>
+
+</div>
+
+</div>
+
+</main>
+
+<footer>
+
+<p>© 2026 FitForFun</p>
+
+</footer>
+
+<script>
+let lessonName = null;
+let lessonPrice = null;
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  lessonName = urlParams.get('lesson');
+  lessonPrice = parseFloat(urlParams.get('price'));
+
+  if (!lessonName || !lessonPrice) {
+    alert('Geen les geselecteerd');
+    window.location.href = 'lessen.html';
+    return;
+  }
+
+  loadLessonInfo();
+
+  // Voeg event listener toe voor aantal maanden input
+  document.getElementById('maanden').addEventListener('change', updateTotalPrice);
+  document.getElementById('maanden').addEventListener('input', updateTotalPrice);
+
+  // Bereken direct de totale prijs
+  updateTotalPrice();
+});
+
+function updateTotalPrice() {
+  const maanden = parseInt(document.getElementById('maanden').value) || 1;
+  const totalPrice = lessonPrice * maanden;
+  document.getElementById('totalPrice').textContent = '€' + totalPrice.toFixed(2);
+}
+
+function loadLessonInfo() {
+  // Toon les informatie gebaseerd op geselecteerde les
+  const lessonDescriptions = {
+    'Yoga': 'Verbeter je flexibiliteit, kracht en mentale gezondheid met onze ontspannende yogalessen.',
+    'HIIT': 'Intens en effectief training voor maximale calorieverbranding en cardio-verbetering.',
+    'Spinning': 'Rijd met energie naar je doelen op onze stationaire fietsen met motiverende instructeurs.',
+    'Pilates': 'Versterk je kernspieren en verbeter je houding met gericht pilatestraining.',
+    'Zumba': 'Dans je fit terwijl je plezier hebt! Energieke les met Latijnse ritmes.',
+    'Krachttraining': 'Bouw spiermassa en kracht op met begeleide krachttraining sessies.'
+  };
+
+  const description = lessonDescriptions[lessonName] || 'Professionele fitnesles voor iedereen.';
+
+  document.getElementById('lessonInfo').innerHTML = `
+    <div class="lesson-summary">
+      <h2>Je hebt gekozen voor: <strong>${lessonName}</strong></h2>
+      <p>${description}</p>
+      <p><strong style="color: #e63946;">Prijs: €${lessonPrice} per maand</strong></p>
+    </div>
+  `;
+}
+
+document.getElementById('signupForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const voornaam = document.getElementById('voornaam').value;
+  const achternaam = document.getElementById('achternaam').value;
+  const email = document.getElementById('email').value;
+  const telefoon = document.getElementById('telefoon').value;
+  const maanden = parseInt(document.getElementById('maanden').value);
+  const totalPrice = lessonPrice * maanden;
+
+  // Bevestiging tonen
+  alert(`${voornaam}, je bent succesvol ingeschreven voor ${lessonName}!\n\nGegevens:\nEmail: ${email}\nTelefoon: ${telefoon}\n\nAbonnement: ${maanden} maand(en)\nTotale kosten: €${totalPrice.toFixed(2)}\n\nJe ontvangt een bevestigingsmail.`);
+
+  // Na bevestiging teruggaan naar lessonenpagina
+  window.location.href = 'lessen.html';
+});
+</script>
+<script src="../js/script.js"></script>
+
+</body>
+</html>
