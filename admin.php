@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include 'db_config.php';
 
 if (!isset($_SESSION['lid_id']) || $_SESSION['rol'] !== 'admin') {
