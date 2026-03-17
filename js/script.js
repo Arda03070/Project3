@@ -1,7 +1,16 @@
-function toggleMenu(){
+const sidebar = document.getElementById('sidebar');
+const main = document.getElementById('main');
+const menuBtn = document.getElementById('menuBtn');
 
-const menu = document.getElementById("menu");
+menuBtn.onclick = () => {
+    sidebar.classList.toggle('active');
+    main.classList.toggle('shift');
+};
 
-menu.classList.toggle("active");
-
+function switchPage(page) {
+    document.querySelectorAll('.content-page').forEach(p => {
+        p.style.display = 'none';
+    });
+    const target = document.getElementById('page-' + page);
+    if (target) target.style.display = 'block';
 }
