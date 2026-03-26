@@ -13,8 +13,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     if (empty($naam) || empty($email) || empty($telefoon) || empty($wachtwoord)) {
         $error = "Alle velden zijn verplicht!";
+    } elseif (!ctype_upper(mb_substr($naam, 0, 1))) {
+        $error = "Je naam moet beginnen met een hoofdletter!";
     } elseif ($wachtwoord !== $confirm_wachtwoord) {
         $error = "Wachtwoorden komen niet overeen!";
+    } elseif (!preg_match('/^06[\s\-]?\d{2}[\s\-]?\d{2}[\s\-]?\d{2}[\s\-]?\d{2}$/', $telefoon)) {
+        $error = "Telefoonnummer moet beginnen met 06!";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "E-mailadres is ongeldig!";
     } else {
@@ -99,7 +103,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div class="auth-left">
   <div class="auth-left-bg"></div>
   <div class="auth-left-content">
-    <a href="index.html" class="logo">Fit<span>For</span>Fun</a>
+    <a href="website maken/index.html" class="logo">Fit<span>For</span>Fun</a>
     <div class="auth-left-bottom">
       <h2>Begin<br>Vandaag.</h2>
       <p>Eerste week gratis. Geen verplichtingen.</p>

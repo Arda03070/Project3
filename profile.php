@@ -132,10 +132,10 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
 <body>
 
 <header>
-  <a href="index.html" class="logo">Fit<span>For</span>Fun</a>
+  <a href="website maken/index.html" class="logo">Fit<span>For</span>Fun</a>
   <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="lessen.html">Lessen</a></li>
+    <li><a href="website maken/index.html">Home</a></li>
+    <li><a href="website maken/lessen.html">Lessen</a></li>
     <li><a href="profile.php">Mijn Profiel</a></li>
   </ul>
   <a href="logout.php" class="logout-link">Uitloggen</a>

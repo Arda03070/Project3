@@ -133,6 +133,9 @@ tbody tr:last-child td{border-bottom:none;}
 
 .del-btn{background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.2);color:var(--red);font-family:var(--font-body);font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:.2s;}
 .del-btn:hover{background:var(--red);color:#fff;}
+.rol-select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;font-family:var(--font-body);font-size:12px;font-weight:700;letter-spacing:.5px;padding:5px 10px;border-radius:6px;cursor:pointer;outline:none;transition:.2s;}
+.rol-select:focus{border-color:rgba(230,57,70,.4);}
+.rol-select option{background:#1c1c1c;color:#fff;}
 
 /* FORM CARD */
 .form-card{background:var(--dark3);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:24px;}
@@ -173,7 +176,7 @@ tbody tr:last-child td{border-bottom:none;}
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <a href="index.html" class="sidebar-logo">Fit<span>For</span>Fun</a>
+    <a href="website maken/index.html" class="sidebar-logo">Fit<span>For</span>Fun</a>
     <div class="sidebar-role">Admin Dashboard</div>
   </div>
 
@@ -317,7 +320,12 @@ tbody tr:last-child td{border-bottom:none;}
             <td><?= htmlspecialchars($lid['naam']) ?></td>
             <td><?= htmlspecialchars($lid['email']) ?></td>
             <td><?= htmlspecialchars($lid['telefoon'] ?? '—') ?></td>
-            <td><span class="badge-<?= $lid['rol'] ?>"><?= ucfirst($lid['rol']) ?></span></td>
+            <td>
+              <select class="rol-select" data-id="<?= $lid['id'] ?>" onchange="updateRol(<?= $lid['id'] ?>, this)">
+                <option value="lid" <?= $lid['rol'] === 'lid' ? 'selected' : '' ?>>Lid</option>
+                <option value="admin" <?= $lid['rol'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+              </select>
+            </td>
             <td><?= $lid['jaar'] ?></td>
             <td><button class="del-btn" onclick="deleteLid(<?= $lid['id'] ?>, this)">Verwijderen</button></td>
           </tr>
@@ -434,6 +442,23 @@ function addLid(){
       } else alert('Fout: '+data.error);
     });
 }
+function updateRol(id, select) {
+  const nieuweRol = select.value;
+  fetch('update_rol_ajax.php', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({id, rol: nieuweRol})
+  }).then(r => r.json()).then(d => {
+    if (!d.success) {
+      alert('Rol bijwerken mislukt');
+      select.value = select.dataset.prev || 'lid';
+    } else {
+      select.dataset.prev = nieuweRol;
+    }
+  }).catch(() => alert('Fout bij verbinding'));
+  select.dataset.prev = select.value;
+}
+
 function deleteLid(id,btn){
   if(!confirm('Lid verwijderen?'))return;
   fetch('delete_lid_ajax.php?id='+id).then(r=>r.json()).then(d=>{

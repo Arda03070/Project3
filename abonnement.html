@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitForFun — Abonnement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --red: #e63946;
+  --red2: #ff4d5a;
+  --dark: #0a0a0a;
+  --dark2: #111111;
+  --dark3: #1a1a1a;
+  --gray: #888;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--dark); color: #fff; font-family: var(--font-body); overflow-x: hidden; }
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* HEADER */
+header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 40px;
+  background: rgba(10,10,10,0.85);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(230,57,70,0.15);
+  animation: slideDown 0.7s ease both;
+}
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.logo { font-family: var(--font-display); font-size: 32px; letter-spacing: 3px; color: #fff; line-height: 1; text-decoration: none; }
+.logo span { color: var(--red); }
+.nav-links { display: flex; gap: 8px; list-style: none; }
+.nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; font-weight: 500; letter-spacing: 0.5px; padding: 8px 16px; border-radius: 6px; transition: color 0.25s, background 0.25s; }
+.nav-links a:hover, .nav-links a.active { color: #fff; background: rgba(255,255,255,0.06); }
+.nav-links a.active { color: var(--red); }
+.nav-cta { display: flex; gap: 10px; align-items: center; }
+.btn-ghost { color: #fff; text-decoration: none; font-size: 14px; font-weight: 500; padding: 9px 20px; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; transition: border-color 0.25s, background 0.25s; }
+.btn-ghost:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+.btn-red { color: #fff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 9px 22px; background: var(--red); border-radius: 6px; transition: background 0.2s, transform 0.2s; }
+.btn-red:hover { background: var(--red2); transform: translateY(-1px); }
+.burger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; background: none; border: none; }
+.burger span { display: block; width: 24px; height: 2px; background: #fff; border-radius: 2px; transition: 0.3s; }
+
+/* MOBILE MENU */
+.menu { position: fixed; top: 0; left: -100%; width: min(320px,85vw); height: 100vh; background: var(--dark2); z-index: 1000; padding: 90px 30px 30px; transition: left 0.4s cubic-bezier(0.77,0,0.18,1); border-right: 1px solid rgba(230,57,70,0.15); }
+.menu.active { left: 0; }
+.menu a { display: block; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 20px; font-weight: 500; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.06); transition: color 0.2s, padding-left 0.2s; }
+.menu a:hover { color: var(--red); padding-left: 8px; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(4px); }
+.overlay.active { opacity: 1; pointer-events: all; }
+
+/* PAGE HERO */
+.page-hero {
+  padding: 160px 40px 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.page-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 60% at 50% 0%, rgba(230,57,70,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.page-hero .section-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 16px;
+}
+.page-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 8vw, 110px);
+  line-height: 0.93;
+  letter-spacing: 2px;
+  margin-bottom: 22px;
+}
+.page-hero h1 span { color: var(--red); }
+.page-hero p {
+  font-size: 18px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.6);
+  max-width: 520px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+}
+
+/* TOGGLE */
+.billing-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--dark2);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px;
+  padding: 6px;
+  margin-bottom: 70px;
+  position: relative;
+}
+.billing-toggle input { display: none; }
+.toggle-option {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: color 0.3s;
+  color: var(--gray);
+  user-select: none;
+  position: relative;
+  z-index: 1;
+}
+.toggle-option.active { color: #fff; }
+.toggle-bg {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  height: calc(100% - 12px);
+  width: calc(50% - 6px);
+  background: var(--red);
+  border-radius: 100px;
+  transition: left 0.3s cubic-bezier(0.77,0,0.18,1);
+}
+.toggle-bg.right { left: calc(50%); }
+.save-badge {
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(230,57,70,0.15);
+  color: var(--red);
+  border: 1px solid rgba(230,57,70,0.3);
+  border-radius: 100px;
+  padding: 2px 8px;
+  letter-spacing: 1px;
+}
+
+/* PRICING SECTION */
+.pricing-section {
+  padding: 0 40px 100px;
+}
+.pricing-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.plan-card {
+  background: var(--dark2);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 36px 32px;
+  position: relative;
+  transition: border-color 0.3s, transform 0.3s;
+  animation: fadeUp 0.6s ease both;
+}
+.plan-card:nth-child(1) { animation-delay: 0.1s; }
+.plan-card:nth-child(2) { animation-delay: 0.2s; }
+.plan-card:nth-child(3) { animation-delay: 0.3s; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.plan-card:hover { border-color: rgba(230,57,70,0.4); transform: translateY(-4px); }
+.plan-card.featured {
+  background: linear-gradient(160deg, #1c0608 0%, var(--dark2) 50%);
+  border-color: var(--red);
+  transform: scale(1.04);
+  box-shadow: 0 0 60px rgba(230,57,70,0.2);
+}
+.plan-card.featured:hover { transform: scale(1.04) translateY(-4px); }
+
+.popular-badge {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--red);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 5px 18px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.plan-name {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 8px;
+}
+.plan-card.featured .plan-name { color: var(--red); }
+
+.plan-price {
+  font-family: var(--font-display);
+  font-size: 72px;
+  line-height: 1;
+  letter-spacing: -1px;
+  margin-bottom: 4px;
+}
+.plan-price sup { font-size: 28px; vertical-align: top; margin-top: 14px; display: inline-block; font-family: var(--font-body); font-weight: 700; }
+.plan-price .period { font-family: var(--font-body); font-size: 16px; font-weight: 400; color: var(--gray); }
+.plan-price-yearly { display: none; }
+
+.plan-desc {
+  font-size: 14px;
+  color: var(--gray);
+  line-height: 1.6;
+  margin: 16px 0 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.plan-features { list-style: none; margin-bottom: 32px; }
+.plan-features li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.85);
+}
+.plan-features li:last-child { border-bottom: none; }
+.plan-features li .check {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(230,57,70,0.15);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--red);
+}
+.plan-features li .cross {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--gray);
+}
+.plan-features li.muted { color: var(--gray); }
+
+.btn-plan {
+  display: block;
+  text-align: center;
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+}
+.btn-plan-outline {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+}
+.btn-plan-outline:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+.btn-plan-red {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(230,57,70,0.35);
+}
+.btn-plan-red:hover { background: var(--red2); transform: translateY(-1px); box-shadow: 0 8px 30px rgba(230,57,70,0.5); }
+
+/* COMPARE TABLE */
+.compare-section {
+  padding: 0 40px 100px;
+}
+.compare-inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.compare-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 4vw, 56px);
+  letter-spacing: 1px;
+  text-align: center;
+  margin-bottom: 50px;
+}
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.compare-table thead th {
+  padding: 16px 20px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+.compare-table thead th:first-child { text-align: left; color: var(--gray); font-size: 13px; font-family: var(--font-body); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+.compare-table thead th.highlight { color: var(--red); }
+.compare-table tbody tr { border-top: 1px solid rgba(255,255,255,0.06); }
+.compare-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+.compare-table td {
+  padding: 14px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255,255,255,0.75);
+}
+.compare-table td:first-child { text-align: left; color: rgba(255,255,255,0.55); font-size: 14px; }
+.compare-table td .yes { color: var(--red); font-size: 16px; }
+.compare-table td .no { color: rgba(255,255,255,0.2); font-size: 16px; }
+
+/* FAQ */
+.faq-section {
+  padding: 0 40px 100px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.faq-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 4vw, 56px);
+  letter-spacing: 1px;
+  text-align: center;
+  margin-bottom: 50px;
+}
+.faq-item {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  overflow: hidden;
+}
+.faq-item:last-child { border-bottom: 1px solid rgba(255,255,255,0.07); }
+.faq-q {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #fff;
+  text-align: left;
+  padding: 22px 0;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: var(--font-body);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.faq-q:hover { color: var(--red); }
+.faq-icon {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(230,57,70,0.1);
+  border: 1px solid rgba(230,57,70,0.25);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--red);
+  transition: transform 0.3s, background 0.3s;
+}
+.faq-item.open .faq-icon { transform: rotate(45deg); background: var(--red); color: #fff; }
+.faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s;
+  font-size: 15px;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.7;
+}
+.faq-item.open .faq-a { max-height: 200px; padding-bottom: 22px; }
+
+/* CTA BANNER */
+.cta-banner {
+  background: linear-gradient(135deg, var(--red) 0%, #c1121f 100%);
+  padding: 80px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-banner::before { content: 'FFF'; font-family: var(--font-display); font-size: 280px; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); color: rgba(255,255,255,0.06); letter-spacing: 20px; white-space: nowrap; pointer-events: none; }
+.cta-banner h2 { font-family: var(--font-display); font-size: clamp(48px, 7vw, 96px); letter-spacing: 2px; margin-bottom: 16px; position: relative; }
+.cta-banner p { font-size: 18px; font-weight: 300; opacity: 0.85; margin-bottom: 36px; position: relative; }
+.btn-white { display: inline-flex; align-items: center; gap: 8px; background: #fff; color: var(--red); font-weight: 700; font-size: 15px; padding: 16px 36px; border-radius: 8px; text-decoration: none; position: relative; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+.btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+
+/* FOOTER */
+footer { background: var(--dark2); border-top: 1px solid rgba(255,255,255,0.07); padding: 50px 40px 30px; }
+.footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; gap: 40px; flex-wrap: wrap; padding-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 24px; }
+.footer-logo { font-family: var(--font-display); font-size: 36px; letter-spacing: 3px; }
+.footer-logo span { color: var(--red); }
+.footer-tagline { color: var(--gray); font-size: 13px; margin-top: 6px; }
+.footer-links { display: flex; gap: 40px; flex-wrap: wrap; }
+.footer-col h4 { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gray); margin-bottom: 14px; }
+.footer-col a { display: block; color: rgba(255,255,255,0.65); text-decoration: none; font-size: 14px; margin-bottom: 8px; transition: color 0.2s; }
+.footer-col a:hover { color: #fff; }
+.footer-bottom { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--gray); flex-wrap: wrap; gap: 10px; }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .nav-links, .nav-cta { display: none; }
+  .burger { display: flex; }
+  .pricing-grid { grid-template-columns: 1fr; gap: 16px; }
+  .plan-card.featured { transform: scale(1); }
+  .plan-card.featured:hover { transform: translateY(-4px); }
+  .compare-section { overflow-x: auto; }
+  header { padding: 16px 24px; }
+  .page-hero, .pricing-section, .compare-section, .faq-section { padding-left: 24px; padding-right: 24px; }
+  .footer-inner { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">FIT<span>FOR</span>FUN</a>
+  <nav>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="lessen.html">Lessen</a></li>
+      <li><a href="abonnement.html" class="active">Abonnement</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+  <div class="nav-cta">
+    <a href="login.php" class="btn-ghost">Inloggen</a>
+    <a href="register.php" class="btn-red">Gratis starten</a>
+  </div>
+  <button class="burger" id="burgerBtn" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<div class="menu" id="mobileMenu">
+  <a href="index.html">Home</a>
+  <a href="lessen.html">Lessen</a>
+  <a href="abonnement.html">Abonnement</a>
+  <a href="contact.html">Contact</a>
+  <a href="login.php">Inloggen</a>
+  <a href="register.php" style="color:var(--red)">Gratis starten →</a>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- PAGE HERO -->
+<section class="page-hero">
+  <div class="section-label">Kies jouw plan</div>
+  <h1>SIMPELE<br><span>PRIJZEN.</span></h1>
+  <p>Geen verborgen kosten. Geen kleine lettertjes. Kies het abonnement dat bij jou past en begin vandaag nog.</p>
+
+  <div class="billing-toggle" id="billingToggle">
+    <div class="toggle-bg" id="toggleBg"></div>
+    <span class="toggle-option active" id="optMonth" onclick="setBilling('monthly')">Maandelijks</span>
+    <span class="toggle-option" id="optYear" onclick="setBilling('yearly')">Jaarlijks <span class="save-badge">−20%</span></span>
+  </div>
+</section>
+
+<!-- PRICING CARDS -->
+<section class="pricing-section">
+  <div class="pricing-grid">
+
+    <!-- STARTER -->
+    <div class="plan-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">
+        <sup>€</sup><span class="price-val" data-monthly="19" data-yearly="15">19</span>
+        <span class="period">/ maand</span>
+      </div>
+      <p class="plan-desc">Perfect om kennis te maken met FitForFun. Toegang tot de basis faciliteiten.</p>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Toegang tot gym (ma–vr)</li>
+        <li><span class="check">✓</span> 2 groepslessen per week</li>
+        <li><span class="check">✓</span> Kleedkamers & douches</li>
+        <li><span class="cross">✗</span> <span class="muted">Personal coaching</span></li>
+        <li><span class="cross">✗</span> <span class="muted">Voedingsadvies</span></li>
+        <li><span class="cross">✗</span> <span class="muted">Onbeperkte lessen</span></li>
+      </ul>
+      <a href="register.php" class="btn-plan btn-plan-outline">Kies Starter</a>
+    </div>
+
+    <!-- PRO (featured) -->
+    <div class="plan-card featured">
+      <div class="popular-badge">★ Meest Populair</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">
+        <sup>€</sup><span class="price-val" data-monthly="34" data-yearly="27">34</span>
+        <span class="period">/ maand</span>
+      </div>
+      <p class="plan-desc">De beste keuze voor serieuze sporters. Onbeperkt trainen met professionele begeleiding.</p>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Onbeperkte gymtoegang</li>
+        <li><span class="check">✓</span> Alle groepslessen</li>
+        <li><span class="check">✓</span> 1× personal training / maand</li>
+        <li><span class="check">✓</span> Voedingsadvies basis</li>
+        <li><span class="check">✓</span> App + trainingsschema</li>
+        <li><span class="cross">✗</span> <span class="muted">Wekelijkse coaching</span></li>
+      </ul>
+      <a href="register.php" class="btn-plan btn-plan-red">Kies Pro</a>
+    </div>
+
+    <!-- ELITE -->
+    <div class="plan-card">
+      <div class="plan-name">Elite</div>
+      <div class="plan-price">
+        <sup>€</sup><span class="price-val" data-monthly="59" data-yearly="47">59</span>
+        <span class="period">/ maand</span>
+      </div>
+      <p class="plan-desc">Alles inbegrepen. Voor wie het maximale wil halen uit elke training.</p>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Onbeperkte gymtoegang</li>
+        <li><span class="check">✓</span> Alle groepslessen</li>
+        <li><span class="check">✓</span> 4× personal training / maand</li>
+        <li><span class="check">✓</span> Uitgebreid voedingsplan</li>
+        <li><span class="check">✓</span> Wekelijkse coaching calls</li>
+        <li><span class="check">✓</span> Prioriteit bij inschrijving</li>
+      </ul>
+      <a href="register.php" class="btn-plan btn-plan-outline">Kies Elite</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- COMPARE TABLE -->
+<section class="compare-section">
+  <div class="compare-inner">
+    <h2 class="compare-title">VERGELIJK PLANNEN</h2>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Wat is inbegrepen</th>
+          <th>Starter</th>
+          <th class="highlight">Pro</th>
+          <th>Elite</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Gymtoegang (ma–vr)</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+        <tr><td>Gymtoegang (weekend)</td><td><span class="no">✗</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+        <tr><td>Groepslessen per week</td><td>2×</td><td>Onbeperkt</td><td>Onbeperkt</td></tr>
+        <tr><td>Personal training</td><td><span class="no">✗</span></td><td>1× / maand</td><td>4× / maand</td></tr>
+        <tr><td>Voedingsadvies</td><td><span class="no">✗</span></td><td>Basis</td><td>Uitgebreid</td></tr>
+        <tr><td>App & trainingsschema</td><td><span class="no">✗</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+        <tr><td>Wekelijkse coaching</td><td><span class="no">✗</span></td><td><span class="no">✗</span></td><td><span class="yes">✓</span></td></tr>
+        <tr><td>Kleedkamers & sauna</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+        <tr><td>Gratis gastenpas (2×/jaar)</td><td><span class="no">✗</span></td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <h2 class="faq-title">VEELGESTELDE<br>VRAGEN</h2>
+
+  <div class="faq-item">
+    <button class="faq-q">Kan ik mijn abonnement pauzeren?<span class="faq-icon">+</span></button>
+    <div class="faq-a">Ja, je kunt je abonnement tot 2 maanden per jaar pauzeren. Dit doe je eenvoudig via je profiel in de app of door contact op te nemen met onze receptie.</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q">Hoe lang zit ik aan een contract vast?<span class="faq-icon">+</span></button>
+    <div class="faq-a">Bij maandelijkse betaling heb je een opzegtermijn van 1 maand. Bij jaarlijkse betaling ontvang je 20% korting maar loop je het volledige jaar. Je kunt altijd upgraden of downgraden.</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q">Wat als ik niet tevreden ben?<span class="faq-icon">+</span></button>
+    <div class="faq-a">We bieden een 14-dagen proefperiode zonder verplichtingen. Niet tevreden? Dan krijg je je geld terug — geen gedoe, geen vragen.</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q">Kan ik van plan wisselen?<span class="faq-icon">+</span></button>
+    <div class="faq-a">Uiteraard! Je kunt op elk moment upgraden naar een hoger plan. Downgraden gaat in per de volgende factuurdatum.</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q">Zijn er inschrijfkosten?<span class="faq-icon">+</span></button>
+    <div class="faq-a">Nee, bij FitForFun betaal je geen inschrijfgeld. Je betaalt alleen het maandelijkse of jaarlijkse abonnementsbedrag — dat is alles.</div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<div class="cta-banner">
+  <h2>KLAAR OM TE STARTEN?</h2>
+  <p>14 dagen gratis proberen. Geen creditcard nodig.</p>
+  <a href="register.php" class="btn-white">Begin Vandaag →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo">FIT<span>FOR</span>FUN</div>
+      <div class="footer-tagline">Geen excuses — alleen resultaten.</div>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Navigatie</h4>
+        <a href="index.html">Home</a>
+        <a href="lessen.html">Lessen</a>
+        <a href="abonnement.html">Abonnement</a>
+        <a href="contact.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Account</h4>
+        <a href="login.php">Inloggen</a>
+        <a href="register.php">Registreren</a>
+        <a href="profile.php">Mijn Profiel</a>
+      </div>
+      <div class="footer-col">
+        <h4>Info</h4>
+        <a href="#">Privacybeleid</a>
+        <a href="#">Algemene Voorwaarden</a>
+        <a href="#">Sitemap</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 FitForFun. Alle rechten voorbehouden.</span>
+    <span>Gemaakt met 💪 in Nederland</span>
+  </div>
+</footer>
+
+<script>
+// Burger menu
+const burger = document.getElementById('burgerBtn');
+const menu = document.getElementById('mobileMenu');
+const overlay = document.getElementById('overlay');
+burger.addEventListener('click', () => { menu.classList.toggle('active'); overlay.classList.toggle('active'); });
+overlay.addEventListener('click', () => { menu.classList.remove('active'); overlay.classList.remove('active'); });
+
+// Billing toggle
+let billing = 'monthly';
+function setBilling(type) {
+  billing = type;
+  const bg = document.getElementById('toggleBg');
+  const optM = document.getElementById('optMonth');
+  const optY = document.getElementById('optYear');
+  if (type === 'yearly') {
+    bg.classList.add('right');
+    optM.classList.remove('active');
+    optY.classList.add('active');
+  } else {
+    bg.classList.remove('right');
+    optM.classList.add('active');
+    optY.classList.remove('active');
+  }
+  document.querySelectorAll('.price-val').forEach(el => {
+    el.textContent = type === 'yearly' ? el.dataset.yearly : el.dataset.monthly;
+  });
+}
+
+// FAQ accordion
+document.querySelectorAll('.faq-q').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = btn.parentElement;
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  });
+});
+</script>
+</body>
+</html>

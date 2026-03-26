@@ -5,6 +5,6 @@ include 'db_config.php';
 session_destroy();
 
 
-header("Location:index.html");
+header("Location: website maken/index.html");
 exit;
 ?>
