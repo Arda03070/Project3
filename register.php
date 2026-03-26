@@ -99,7 +99,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div class="auth-left">
   <div class="auth-left-bg"></div>
   <div class="auth-left-content">
-    <a href="website maken/index.html" class="logo">Fit<span>For</span>Fun</a>
+    <a href="index.html" class="logo">Fit<span>For</span>Fun</a>
     <div class="auth-left-bottom">
       <h2>Begin<br>Vandaag.</h2>
       <p>Eerste week gratis. Geen verplichtingen.</p>

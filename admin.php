@@ -173,7 +173,7 @@ tbody tr:last-child td{border-bottom:none;}
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
-    <a href="website maken/index.html" class="sidebar-logo">Fit<span>For</span>Fun</a>
+    <a href="index.html" class="sidebar-logo">Fit<span>For</span>Fun</a>
     <div class="sidebar-role">Admin Dashboard</div>
   </div>
 
