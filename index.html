@@ -1,3 +1,15 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitForFun — Word Fit. Word Vrij.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+
 /* ─── RESET & BASE ─── */
 *, *::before, *::after {
   margin: 0; padding: 0; box-sizing: border-box;
@@ -684,3 +696,289 @@ footer {
   .hero-actions { flex-direction: column; align-items: flex-start; }
 }
 
+</style>
+</head>
+<body>
+
+<!-- MOBILE OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+
+<!-- MOBILE MENU -->
+<nav class="menu" id="menu">
+  <a href="lessen.html">Home</a>
+  <a href="lessen.html">Lessen</a>
+  <a href="#">Abonnement</a>
+  <a href="#">Contact</a>
+  <a href="../login.php">Inloggen</a>
+  <a href="../register.php">Registreren</a>
+</nav>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Fit<span>For</span>Fun</div>
+
+  <ul class="nav-links">
+    <li><a href="lessen.html">Home</a></li>
+    <li><a href="lessen.html">Lessen</a></li>
+    <li><a href="#">Abonnement</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+
+  <div class="nav-cta">
+    <a href="../login.php" class="btn-ghost">Inloggen</a>
+    <a href="../register.php" class="btn-red">Gratis starten</a>
+  </div>
+
+  <div class="burger" id="burgerBtn" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</header>
+
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+
+  <div class="hero-content">
+    <div class="hero-tag">Nu open in jouw stad</div>
+
+    <h1>Word <span class="accent">Fit.</span><br>Word <span class="accent">Vrij.</span></h1>
+
+    <p>
+      Bij FitForFun train je met topapparatuur, ervaren coaches en een
+      community die je elke dag weer opstuwt. Geen excuses — alleen resultaten.
+    </p>
+
+    <div class="hero-actions">
+      <a href="lessen.html" class="btn-primary">
+        Start Vandaag
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+      <a href="#why" class="btn-outline">Meer ontdekken</a>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stats-inner">
+      <div class="stat">
+        <div class="stat-num">1200+</div>
+        <div class="stat-label">Leden</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">35+</div>
+        <div class="stat-label">Lessen per week</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">8</div>
+        <div class="stat-label">Coaches</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">24/7</div>
+        <div class="stat-label">Open</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- WHY -->
+<section id="why">
+  <div class="why">
+    <div class="why-grid">
+      <div class="why-text">
+        <span class="section-label">Waarom FitForFun</span>
+        <h2 class="section-title">Meer dan<br>een sportschool</h2>
+        <p class="section-sub">
+          Wij combineren topapparatuur, persoonlijke begeleiding en een
+          sfeer die je motiveert om terug te komen. Elke dag beter.
+        </p>
+
+        <div class="features">
+          <div class="feature">
+            <div class="feature-icon">🏋️</div>
+            <h3>Top Apparatuur</h3>
+            <p>Nieuwste machines en vrije gewichten voor elke doelstelling.</p>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">🎯</div>
+            <h3>Persoonlijk Plan</h3>
+            <p>Jouw coach stelt een schema op dat echt bij jou past.</p>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">🔥</div>
+            <h3>Groepslessen</h3>
+            <p>Van HIIT tot yoga — elke dag een andere uitdaging.</p>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">💬</div>
+            <h3>Community</h3>
+            <p>Omring je met mensen die net zo gedreven zijn als jij.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="why-image">
+        <img src="../img/gym2.jpg" alt="FitForFun training" onerror="this.parentElement.innerHTML='<div style=\'width:100%;height:500px;background:#1a1a1a;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:80px;\'>🏋️</div>'">
+        <div class="why-image-badge">
+          <div class="big">5★</div>
+          <div class="small">Gemiddelde score</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- CLASSES -->
+<section class="classes-section">
+  <div class="classes-inner">
+    <div class="classes-header">
+      <div>
+        <span class="section-label">Ons aanbod</span>
+        <h2 class="section-title">Kies jouw les</h2>
+      </div>
+      <a href="lessen.html" class="btn-outline">Alle lessen →</a>
+    </div>
+
+    <div class="classes-grid">
+      <div class="class-card">
+        <div class="class-card-bg" style="background:linear-gradient(135deg,#1a0a0a,#2d0a0a)">
+          <div class="class-emoji">🔥</div>
+        </div>
+        <div class="class-card-body">
+          <div class="class-tag">Intensief</div>
+          <h3>HIIT Training</h3>
+          <p>45 min · Ma / Wo / Vr</p>
+        </div>
+      </div>
+
+      <div class="class-card">
+        <div class="class-card-bg" style="background:linear-gradient(135deg,#0a0f1a,#0a1a2d)">
+          <div class="class-emoji">🥊</div>
+        </div>
+        <div class="class-card-body">
+          <div class="class-tag">Kracht</div>
+          <h3>Kickboxing</h3>
+          <p>60 min · Di / Do / Za</p>
+        </div>
+      </div>
+
+      <div class="class-card">
+        <div class="class-card-bg" style="background:linear-gradient(135deg,#0a1a0a,#0d2a0d)">
+          <div class="class-emoji">🧘</div>
+        </div>
+        <div class="class-card-body">
+          <div class="class-tag">Herstel</div>
+          <h3>Yoga & Flow</h3>
+          <p>60 min · Za / Zo</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- GALLERY -->
+<section>
+  <div class="gallery-section">
+    <span class="section-label">Onze locatie</span>
+    <h2 class="section-title">Kom kijken</h2>
+
+    <div class="gallery-grid">
+      <div class="gallery-item">
+        <img src="../img/gym.jpg" alt="Gym vloer"
+          onerror="this.outerHTML='<div class=\'gallery-placeholder\'>🏋️</div>'">
+      </div>
+      <div class="gallery-item">
+        <img src="../img/gym2.jpg" alt="Training"
+          onerror="this.outerHTML='<div class=\'gallery-placeholder\'>💪</div>'">
+      </div>
+      <div class="gallery-item">
+        <img src="../img/gym3.jpg" alt="Apparatuur"
+          onerror="this.outerHTML='<div class=\'gallery-placeholder\'>🔩</div>'">
+      </div>
+      <div class="gallery-item">
+        <img src="../img/gym4.jpg" alt="Kleedkamer"
+          onerror="this.outerHTML='<div class=\'gallery-placeholder\'>🚿</div>'">
+      </div>
+      <div class="gallery-item">
+        <img src="../img/gym5.jpg" alt="Sfeer"
+          onerror="this.outerHTML='<div class=\'gallery-placeholder\'>🔥</div>'">
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- CTA BANNER -->
+<section class="cta-banner">
+  <h2>Begin Vandaag</h2>
+  <p>Eerste week gratis. Geen verplichtingen. Gewoon starten.</p>
+  <a href="../register.php" class="btn-white">
+    Schrijf je in
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+  </a>
+</section>
+
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo">Fit<span>For</span>Fun</div>
+      <div class="footer-tagline">Plezier. Motivatie. Resultaat.</div>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Navigatie</h4>
+        <a href="lessen.html">Home</a>
+        <a href="lessen.html">Lessen</a>
+        <a href="#">Abonnement</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Account</h4>
+        <a href="../login.php">Inloggen</a>
+        <a href="../register.php">Registreren</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 FitForFun — Alle rechten voorbehouden</span>
+    <span>Made with 💪</span>
+  </div>
+</footer>
+
+
+<script>
+  function toggleMenu() {
+    document.getElementById('menu').classList.toggle('active');
+    document.getElementById('overlay').classList.toggle('active');
+  }
+  function closeMenu() {
+    document.getElementById('menu').classList.remove('active');
+    document.getElementById('overlay').classList.remove('active');
+  }
+
+  // Fade-in on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.feature, .class-card, .gallery-item, .stat').forEach(el => {
+    el.style.cssText += 'opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease;';
+    observer.observe(el);
+  });
+</script>
+
+</body>
+</html>
