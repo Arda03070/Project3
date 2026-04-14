@@ -44,3 +44,4 @@ VALUES (
 
 SELECT * FROM leden;
 
+]
