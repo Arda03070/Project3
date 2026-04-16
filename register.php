@@ -5,36 +5,65 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $naam = trim($_POST['naam']);
-    $email = trim($_POST['email']);
-    $telefoon = trim($_POST['telefoon']);
-    $wachtwoord = $_POST['wachtwoord'];
-    $confirm_wachtwoord = $_POST['confirm_wachtwoord'];
+    $voornaam = trim($_POST['voornaam'] ?? '');
+    $tussenvoegsel = trim($_POST['tussenvoegsel'] ?? '');
+    $achternaam = trim($_POST['achternaam'] ?? '');
+    $gebruikersnaam = trim($_POST['gebruikersnaam'] ?? '');
+    $mobiel = trim($_POST['mobiel'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $wachtwoord = $_POST['wachtwoord'] ?? '';
+    $confirm_wachtwoord = $_POST['confirm_wachtwoord'] ?? '';
     
-    if (empty($naam) || empty($email) || empty($telefoon) || empty($wachtwoord)) {
-        $error = "Alle velden zijn verplicht!";
-    } elseif (!ctype_upper(mb_substr($naam, 0, 1))) {
-        $error = "Je naam moet beginnen met een hoofdletter!";
+    if (empty($voornaam) || empty($achternaam) || empty($gebruikersnaam) || empty($mobiel) || empty($email) || empty($wachtwoord)) {
+        $error = "Alle verplichte velden moeten ingevuld worden!";
+    } elseif (!ctype_upper(mb_substr($voornaam, 0, 1))) {
+        $error = "Je voornaam moet beginnen met een hoofdletter!";
     } elseif ($wachtwoord !== $confirm_wachtwoord) {
         $error = "Wachtwoorden komen niet overeen!";
-    } elseif (!preg_match('/^06[\s\-]?\d{2}[\s\-]?\d{2}[\s\-]?\d{2}[\s\-]?\d{2}$/', $telefoon)) {
+    } elseif (!preg_match('/^06[\s\-]?\d{2}[\s\-]?\d{2}[\s\-]?\d{2}[\s\-]?\d{2}$/', $mobiel)) {
         $error = "Telefoonnummer moet beginnen met 06!";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "E-mailadres is ongeldig!";
     } else {
         try {
-            $check = $conn->prepare("SELECT id FROM leden WHERE email = ?");
-            $check->execute([$email]);
+            // Check of gebruikersnaam al bestaat
+            $check = $conn->prepare("SELECT Id FROM gebruiker WHERE Gebruikersnaam = ?");
+            $check->execute([$gebruikersnaam]);
             if ($check->rowCount() > 0) {
-                $error = "Dit e-mailadres is al geregistreerd!";
+                $error = "Deze gebruikersnaam is al in gebruik!";
             } else {
-                $hashed_password = password_hash($wachtwoord, PASSWORD_BCRYPT);
-                $stmt = $conn->prepare("INSERT INTO leden (naam, email, telefoon, wachtwoord) VALUES (?, ?, ?, ?)");
-                $stmt->execute([$naam, $email, $telefoon, $hashed_password]);
-                $success = "Registratie gelukt! Je kunt nu inloggen.";
-                $_POST = [];
+                // Check of email al bestaat in lid tabel
+                $checkEmail = $conn->prepare("SELECT Id FROM lid WHERE Email = ?");
+                $checkEmail->execute([$email]);
+                if ($checkEmail->rowCount() > 0) {
+                    $error = "Dit e-mailadres is al geregistreerd!";
+                } else {
+                    $conn->beginTransaction();
+                    
+                    // 1. Gebruiker aanmaken
+                    $hashed_password = password_hash($wachtwoord, PASSWORD_BCRYPT);
+                    $stmt = $conn->prepare("INSERT INTO gebruiker (Voornaam, Tussenvoegsel, Achternaam, Gebruikersnaam, Wachtwoord) VALUES (?, ?, ?, ?, ?)");
+                    $stmt->execute([$voornaam, $tussenvoegsel, $achternaam, $gebruikersnaam, $hashed_password]);
+                    $gebruikerId = $conn->lastInsertId();
+                    
+                    // 2. Rol toekennen (Lid)
+                    $stmt = $conn->prepare("INSERT INTO rol (GebruikerId, Naam) VALUES (?, 'Lid')");
+                    $stmt->execute([$gebruikerId]);
+                    
+                    // 3. Lid aanmaken met relatienummer
+                    $stmtMax = $conn->query("SELECT COALESCE(MAX(Relatienummer), 200) + 1 AS volgend FROM lid");
+                    $volgendNummer = $stmtMax->fetch()['volgend'];
+                    
+                    $stmt = $conn->prepare("INSERT INTO lid (Voornaam, Tussenvoegsel, Achternaam, Relatienummer, Mobiel, Email) VALUES (?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$voornaam, $tussenvoegsel, $achternaam, $volgendNummer, $mobiel, $email]);
+                    
+                    $conn->commit();
+                    $success = "Registratie gelukt! Je kunt nu inloggen met gebruikersnaam: " . htmlspecialchars($gebruikersnaam);
+                    $_POST = [];
+                }
             }
         } catch (PDOException $e) {
+            if ($conn->inTransaction()) $conn->rollBack();
             $error = "Registratiefout: " . $e->getMessage();
         }
     }
@@ -84,6 +113,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .form-group input:focus{border-color:var(--red);background:rgba(230,57,70,.06);}
 .form-group input::placeholder{color:rgba(255,255,255,.2);}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-row-3{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;}
 
 .submit-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--red);color:#fff;font-family:var(--font-body);font-weight:700;font-size:16px;padding:15px;border:none;border-radius:10px;cursor:pointer;transition:.2s;box-shadow:0 4px 24px rgba(230,57,70,.35);margin-top:8px;}
 .submit-btn:hover{background:var(--red2);transform:translateY(-1px);}
@@ -95,7 +125,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   body{grid-template-columns:1fr;grid-template-rows:160px 1fr;}
   .auth-left-bottom{display:none;}
   .auth-right{padding:32px 24px;}
-  .form-row{grid-template-columns:1fr;}
+  .form-row,.form-row-3{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -103,7 +133,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div class="auth-left">
   <div class="auth-left-bg"></div>
   <div class="auth-left-content">
-    <a href="website maken/index.html" class="logo">Fit<span>For</span>Fun</a>
+    <a href="index.html" class="logo">Fit<span>For</span>Fun</a>
     <div class="auth-left-bottom">
       <h2>Begin<br>Vandaag.</h2>
       <p>Eerste week gratis. Geen verplichtingen.</p>
@@ -128,14 +158,28 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   <?php endif; ?>
 
   <form method="POST">
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>Voornaam *</label>
+        <input type="text" name="voornaam" placeholder="Jan" required value="<?= isset($_POST['voornaam']) ? htmlspecialchars($_POST['voornaam']) : '' ?>">
+      </div>
+      <div class="form-group">
+        <label>Tussenvoegsel</label>
+        <input type="text" name="tussenvoegsel" placeholder="de" value="<?= isset($_POST['tussenvoegsel']) ? htmlspecialchars($_POST['tussenvoegsel']) : '' ?>">
+      </div>
+      <div class="form-group">
+        <label>Achternaam *</label>
+        <input type="text" name="achternaam" placeholder="Jansen" required value="<?= isset($_POST['achternaam']) ? htmlspecialchars($_POST['achternaam']) : '' ?>">
+      </div>
+    </div>
     <div class="form-row">
       <div class="form-group">
-        <label>Naam *</label>
-        <input type="text" name="naam" placeholder="Jan Jansen" required value="<?= isset($_POST['naam']) ? htmlspecialchars($_POST['naam']) : '' ?>">
+        <label>Gebruikersnaam *</label>
+        <input type="text" name="gebruikersnaam" placeholder="janj" required value="<?= isset($_POST['gebruikersnaam']) ? htmlspecialchars($_POST['gebruikersnaam']) : '' ?>">
       </div>
       <div class="form-group">
         <label>Telefoonnummer *</label>
-        <input type="tel" name="telefoon" placeholder="06 12 34 56 78" required value="<?= isset($_POST['telefoon']) ? htmlspecialchars($_POST['telefoon']) : '' ?>">
+        <input type="tel" name="mobiel" placeholder="06 12 34 56 78" required value="<?= isset($_POST['mobiel']) ? htmlspecialchars($_POST['mobiel']) : '' ?>">
       </div>
     </div>
     <div class="form-group">

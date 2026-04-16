@@ -1,5 +1,5 @@
 <?php
-// Database setup script
+// Database setup script voor FitForFunDB
 $host = 'localhost';
 $user = 'root';
 $password = '';
@@ -7,28 +7,25 @@ $password = '';
 try {
     $conn = new PDO("mysql:host=$host", $user, $password);
     
-    // Database aanmaken
-    $conn->exec("CREATE DATABASE IF NOT EXISTS fitforfun CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+    // Lees het SQL-bestand in
+    $sql = file_get_contents(__DIR__ . '/database_setup.sql');
     
-    // Verbinding met database
-    $conn = new PDO("mysql:host=$host;dbname=fitforfun;charset=utf8mb4", $user, $password);
+    if ($sql === false) {
+        die("Fout: kon database_setup.sql niet lezen!");
+    }
     
-    // Leden tabel aanmaken
-    $sql = "CREATE TABLE IF NOT EXISTS leden (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        naam VARCHAR(100) NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL,
-        telefoon VARCHAR(20),
-        wachtwoord VARCHAR(255) NOT NULL,
-        rol ENUM('lid', 'admin') DEFAULT 'lid',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    )";
-    
+    // Voer de SQL statements uit
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $conn->exec($sql);
     
-    echo "✓ Database 'fitforfun' en tabel 'leden' succesvol aangemaakt!<br>";
-    echo "Je kunt nu het lidmaatschapssysteem gebruiken.";
+    echo "✓ Database 'FitForFunDB' en alle tabellen succesvol aangemaakt!<br>";
+    echo "✓ Tabellen: gebruiker, rol, medewerker, lid, les, reservering<br><br>";
+    echo "<strong>Je kunt nu inloggen met:</strong><br>";
+    echo "Gebruikersnaam: <code>janj</code> — Wachtwoord: <code>password1</code> (Lid)<br>";
+    echo "Gebruikersnaam: <code>saradev</code> — Wachtwoord: <code>password2</code> (Lid)<br>";
+    echo "Gebruikersnaam: <code>keesb</code> — Wachtwoord: <code>password3</code> (Administrator)<br>";
+    echo "Gebruikersnaam: <code>emmaj</code> — Wachtwoord: <code>password4</code> (Medewerker)<br>";
+    echo "Gebruikersnaam: <code>alik</code> — Wachtwoord: <code>password5</code> (Gastgebruiker)<br>";
     
 } catch (PDOException $e) {
     echo "Fout: " . $e->getMessage();

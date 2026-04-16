@@ -1,22 +1,33 @@
 <?php
 include 'db_config.php';
 
-if (!isset($_SESSION['lid_id']) || $_SESSION['rol'] !== 'admin') {
+if (!isset($_SESSION['lid_id']) || $_SESSION['rol'] !== 'Administrator') {
     header("Location: login.php");
     exit;
 }
 
-$stmt = $conn->query("SELECT COUNT(*) as totaal FROM leden");
+$stmt = $conn->query("SELECT COUNT(*) as totaal FROM gebruiker WHERE IsActief = 1");
 $totaalLeden = $stmt->fetch()['totaal'];
 
-$stmt = $conn->prepare("SELECT COUNT(*) as nieuw FROM leden WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())");
+$stmt = $conn->prepare("SELECT COUNT(*) as nieuw FROM gebruiker WHERE MONTH(Datumaangemaakt) = MONTH(CURRENT_DATE()) AND YEAR(Datumaangemaakt) = YEAR(CURRENT_DATE())");
 $stmt->execute();
 $nieuweLeden = $stmt->fetch()['nieuw'];
 
-$stmt = $conn->query("SELECT COUNT(*) as admins FROM leden WHERE rol = 'admin'");
+$stmt = $conn->query("SELECT COUNT(*) as admins FROM rol WHERE Naam = 'Administrator' AND IsActief = 1");
 $totaalAdmins = $stmt->fetch()['admins'];
 
-$stmt = $conn->query("SELECT id, naam, email, telefoon, rol, DATE_FORMAT(created_at,'%d-%m-%Y') as aangemeld FROM leden ORDER BY created_at DESC");
+$stmt = $conn->query("
+    SELECT g.Id as id,
+           CONCAT(g.Voornaam, IF(g.Tussenvoegsel != '', CONCAT(' ', g.Tussenvoegsel), ''), ' ', g.Achternaam) AS naam,
+           g.Gebruikersnaam as email,
+           '' as telefoon,
+           COALESCE(r.Naam, 'Lid') as rol,
+           DATE_FORMAT(g.Datumaangemaakt,'%d-%m-%Y') as aangemeld
+    FROM gebruiker g
+    LEFT JOIN rol r ON r.GebruikerId = g.Id AND r.IsActief = 1
+    WHERE g.IsActief = 1
+    ORDER BY g.Datumaangemaakt DESC
+");
 $leden = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -200,7 +211,7 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="fg"><label>E-mailadres *</label><input type="email" id="editEmail" placeholder="jan@email.nl"></div>
     <div class="fg"><label>Telefoonnummer</label><input type="tel" id="editTelefoon" placeholder="06 12 34 56 78"></div>
     <div class="fg"><label>Rol</label>
-      <select id="editRol"><option value="lid">Lid</option><option value="admin">Admin</option></select>
+      <select id="editRol"><option value="Lid">Lid</option><option value="Administrator">Administrator</option><option value="Medewerker">Medewerker</option><option value="Gastgebruiker">Gastgebruiker</option></select>
     </div>
     <div class="fg">
       <label>Nieuw wachtwoord</label>
@@ -357,7 +368,7 @@ tbody tr:last-child td{border-bottom:none;}
         <div class="fg"><label>Telefoon</label><input id="lidTelefoon" placeholder="06 12 34 56 78"></div>
         <div class="fg"><label>Wachtwoord *</label><input id="lidWachtwoord" type="password" placeholder="••••••••"></div>
         <div class="fg"><label>Rol</label>
-          <select id="lidRol"><option value="lid">Lid</option><option value="admin">Admin</option></select>
+          <select id="lidRol"><option value="Lid">Lid</option><option value="Administrator">Administrator</option><option value="Medewerker">Medewerker</option><option value="Gastgebruiker">Gastgebruiker</option></select>
         </div>
         <div class="fg"><button class="add-btn" onclick="addLid()">+ Toevoegen</button></div>
       </div>
@@ -369,8 +380,10 @@ tbody tr:last-child td{border-bottom:none;}
           <input class="tbl-search" id="ledenSearch" placeholder="Zoek naam of email..." oninput="filterLeden()">
           <select class="tbl-select" id="rolFilter" onchange="filterLeden()">
             <option value="alle">Alle rollen</option>
-            <option value="lid">Leden</option>
-            <option value="admin">Admins</option>
+            <option value="Lid">Leden</option>
+            <option value="Administrator">Admins</option>
+            <option value="Medewerker">Medewerkers</option>
+            <option value="Gastgebruiker">Gastgebruikers</option>
           </select>
           <span class="tbl-count" id="ledenCount"></span>
         </div>
@@ -398,8 +411,10 @@ tbody tr:last-child td{border-bottom:none;}
                       data-id="<?= (int)$lid['id'] ?>"
                       data-prev="<?= htmlspecialchars($lid['rol']) ?>"
                       onchange="updateRol(<?= (int)$lid['id'] ?>,this)">
-                <option value="lid"   <?= $lid['rol']==='lid'   ? 'selected':'' ?>>Lid</option>
-                <option value="admin" <?= $lid['rol']==='admin' ? 'selected':'' ?>>Admin</option>
+                <option value="Lid"            <?= $lid['rol']==='Lid'            ? 'selected':'' ?>>Lid</option>
+                <option value="Administrator"  <?= $lid['rol']==='Administrator'  ? 'selected':'' ?>>Administrator</option>
+                <option value="Medewerker"     <?= $lid['rol']==='Medewerker'     ? 'selected':'' ?>>Medewerker</option>
+                <option value="Gastgebruiker"  <?= $lid['rol']==='Gastgebruiker'  ? 'selected':'' ?>>Gastgebruiker</option>
               </select>
             </td>
             <td><?= htmlspecialchars($lid['aangemeld']) ?></td>

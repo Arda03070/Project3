@@ -4,31 +4,45 @@ include 'db_config.php';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = trim($_POST['email']);
-    $wachtwoord = $_POST['wachtwoord'];
+    $gebruikersnaam = trim($_POST['gebruikersnaam'] ?? '');
+    $wachtwoord = $_POST['wachtwoord'] ?? '';
     
-    if (empty($email) || empty($wachtwoord)) {
-        $error = "E-mail en wachtwoord zijn verplicht!";
+    if (empty($gebruikersnaam) || empty($wachtwoord)) {
+        $error = "Gebruikersnaam en wachtwoord zijn verplicht!";
     } else {
         try {
-            $stmt = $conn->prepare("SELECT id, naam, email, rol, wachtwoord FROM leden WHERE email = ?");
-            $stmt->execute([$email]);
-            $lid = $stmt->fetch();
+            // Zoek gebruiker op Gebruikersnaam in de gebruiker tabel
+            $stmt = $conn->prepare("
+                SELECT g.Id, g.Voornaam, g.Tussenvoegsel, g.Achternaam, g.Gebruikersnaam, g.Wachtwoord, r.Naam AS Rol
+                FROM gebruiker g
+                LEFT JOIN rol r ON r.GebruikerId = g.Id AND r.IsActief = 1
+                WHERE g.Gebruikersnaam = ? AND g.IsActief = 1
+            ");
+            $stmt->execute([$gebruikersnaam]);
+            $gebruiker = $stmt->fetch();
             
-            if ($lid && password_verify($wachtwoord, $lid['wachtwoord'])) {
-                $_SESSION['lid_id'] = $lid['id'];
-                $_SESSION['naam'] = $lid['naam'];
-                $_SESSION['email'] = $lid['email'];
-                $_SESSION['rol'] = $lid['rol'];
+            if ($gebruiker && password_verify($wachtwoord, $gebruiker['Wachtwoord'])) {
+                // Volledige naam samenstellen
+                $volledige_naam = trim($gebruiker['Voornaam'] . ' ' . $gebruiker['Tussenvoegsel'] . ' ' . $gebruiker['Achternaam']);
+                $volledige_naam = preg_replace('/\s+/', ' ', $volledige_naam);
                 
-                if ($lid['rol'] == 'admin') {
+                $_SESSION['lid_id'] = $gebruiker['Id'];
+                $_SESSION['naam'] = $volledige_naam;
+                $_SESSION['gebruikersnaam'] = $gebruiker['Gebruikersnaam'];
+                $_SESSION['rol'] = $gebruiker['Rol'];
+                
+                // Update inlogstatus
+                $update = $conn->prepare("UPDATE gebruiker SET IsIngelogd = 1, Ingelogd = CURDATE() WHERE Id = ?");
+                $update->execute([$gebruiker['Id']]);
+                
+                if ($gebruiker['Rol'] == 'Administrator') {
                     header("Location: admin.php");
                 } else {
                     header("Location: profile.php");
                 }
                 exit;
             } else {
-                $error = "E-mail of wachtwoord is onjuist!";
+                $error = "Gebruikersnaam of wachtwoord is onjuist!";
             }
         } catch (PDOException $e) {
             $error = "Loginfout: " . $e->getMessage();
@@ -103,7 +117,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div class="auth-left">
   <div class="auth-left-bg"></div>
   <div class="auth-left-content">
-    <a href="website maken/index.html" class="logo">Fit<span>For</span>Fun</a>
+    <a href="index.html" class="logo">Fit<span>For</span>Fun</a>
     <div class="auth-left-bottom">
       <h2>Welkom<br>Terug.</h2>
       <p>Log in en ga verder met jouw journey.</p>
@@ -126,8 +140,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
   <form method="POST">
     <div class="form-group">
-      <label>E-mailadres</label>
-      <input type="email" name="email" placeholder="jij@email.nl" required value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>">
+      <label>Gebruikersnaam</label>
+      <input type="text" name="gebruikersnaam" placeholder="bijv. janj" required value="<?= isset($_POST['gebruikersnaam']) ? htmlspecialchars($_POST['gebruikersnaam']) : '' ?>">
     </div>
     <div class="form-group">
       <label>Wachtwoord</label>

@@ -1,7 +1,7 @@
 <?php
 
 $host = 'localhost'; 
-$dbname = 'fitforfun'; 
+$dbname = 'FitForFunDB'; 
 $user = 'root'; 
 $password = ''; 
 

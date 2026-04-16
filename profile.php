@@ -11,28 +11,32 @@ $error = '';
 $success = '';
 
 try {
-    $stmt = $conn->prepare("SELECT naam, email, telefoon FROM leden WHERE id = ?");
+    $stmt = $conn->prepare("
+        SELECT g.Voornaam, g.Tussenvoegsel, g.Achternaam, g.Gebruikersnaam, r.Naam AS Rol
+        FROM gebruiker g
+        LEFT JOIN rol r ON r.GebruikerId = g.Id AND r.IsActief = 1
+        WHERE g.Id = ?
+    ");
     $stmt->execute([$lid_id]);
-    $lid = $stmt->fetch();
+    $gebruiker = $stmt->fetch();
 } catch (PDOException $e) {
     $error = "Fout bij laden gegevens: " . $e->getMessage();
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profile'])) {
-    $naam = trim($_POST['naam']);
-    $email = trim($_POST['email']);
-    $telefoon = trim($_POST['telefoon']);
-    if (empty($naam) || empty($email) || empty($telefoon)) {
-        $error = "Alle velden zijn verplicht!";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = "E-mailadres is ongeldig!";
+    $voornaam = trim($_POST['voornaam']);
+    $tussenvoegsel = trim($_POST['tussenvoegsel']);
+    $achternaam = trim($_POST['achternaam']);
+    if (empty($voornaam) || empty($achternaam)) {
+        $error = "Voornaam en achternaam zijn verplicht!";
     } else {
         try {
-            $stmt = $conn->prepare("UPDATE leden SET naam = ?, email = ?, telefoon = ? WHERE id = ?");
-            $stmt->execute([$naam, $email, $telefoon, $lid_id]);
-            $_SESSION['naam'] = $naam;
-            $_SESSION['email'] = $email;
-            $lid = ['naam' => $naam, 'email' => $email, 'telefoon' => $telefoon];
+            $stmt = $conn->prepare("UPDATE gebruiker SET Voornaam = ?, Tussenvoegsel = ?, Achternaam = ? WHERE Id = ?");
+            $stmt->execute([$voornaam, $tussenvoegsel, $achternaam, $lid_id]);
+            $volledige_naam = trim($voornaam . ' ' . $tussenvoegsel . ' ' . $achternaam);
+            $volledige_naam = preg_replace('/\s+/', ' ', $volledige_naam);
+            $_SESSION['naam'] = $volledige_naam;
+            $gebruiker = ['Voornaam' => $voornaam, 'Tussenvoegsel' => $tussenvoegsel, 'Achternaam' => $achternaam, 'Gebruikersnaam' => $gebruiker['Gebruikersnaam'], 'Rol' => $gebruiker['Rol']];
             $success = "Profielgegevens bijgewerkt!";
         } catch (PDOException $e) {
             $error = "Fout bij bijwerken: " . $e->getMessage();
@@ -50,12 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
         $error = "Nieuwe wachtwoorden komen niet overeen!";
     } else {
         try {
-            $stmt = $conn->prepare("SELECT wachtwoord FROM leden WHERE id = ?");
+            $stmt = $conn->prepare("SELECT Wachtwoord FROM gebruiker WHERE Id = ?");
             $stmt->execute([$lid_id]);
             $user = $stmt->fetch();
-            if (password_verify($old, $user['wachtwoord'])) {
+            if (password_verify($old, $user['Wachtwoord'])) {
                 $hashed = password_hash($new, PASSWORD_BCRYPT);
-                $stmt = $conn->prepare("UPDATE leden SET wachtwoord = ? WHERE id = ?");
+                $stmt = $conn->prepare("UPDATE gebruiker SET Wachtwoord = ? WHERE Id = ?");
                 $stmt->execute([$hashed, $lid_id]);
                 $success = "Wachtwoord succesvol gewijzigd!";
             } else {
@@ -115,7 +119,9 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
 .form-group input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;font-family:var(--font-body);font-size:15px;padding:13px 16px;border-radius:10px;transition:.2s;outline:none;}
 .form-group input:focus{border-color:var(--red);background:rgba(230,57,70,.06);}
 .form-group input::placeholder{color:rgba(255,255,255,.2);}
+.form-group input[readonly]{opacity:.5;cursor:not-allowed;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-row-3{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;}
 
 .save-btn{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;font-family:var(--font-body);font-weight:700;font-size:14px;padding:12px 26px;border:none;border-radius:8px;cursor:pointer;transition:.2s;box-shadow:0 4px 16px rgba(230,57,70,.3);}
 .save-btn:hover{background:var(--red2);transform:translateY(-1px);}
@@ -124,7 +130,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
   header{padding:14px 20px;}
   .nav-links{display:none;}
   .page{padding:100px 20px 60px;}
-  .form-row{grid-template-columns:1fr;}
+  .form-row,.form-row-3{grid-template-columns:1fr;}
   .section-card{padding:24px 20px;}
 }
 </style>
@@ -132,10 +138,10 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
 <body>
 
 <header>
-  <a href="website maken/index.html" class="logo">Fit<span>For</span>Fun</a>
+  <a href="index.html" class="logo">Fit<span>For</span>Fun</a>
   <ul class="nav-links">
-    <li><a href="website maken/index.html">Home</a></li>
-    <li><a href="website maken/lessen.html">Lessen</a></li>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="lessen.html">Lessen</a></li>
     <li><a href="profile.php">Mijn Profiel</a></li>
   </ul>
   <a href="logout.php" class="logout-link">Uitloggen</a>
@@ -147,7 +153,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
     <div class="profile-avatar"><?= strtoupper(substr($_SESSION['naam'], 0, 1)) ?></div>
     <div class="profile-hero-text">
       <h1>Hoi, <?= htmlspecialchars(explode(' ', $_SESSION['naam'])[0]) ?>.</h1>
-      <p><?= htmlspecialchars($_SESSION['email']) ?> · Lid</p>
+      <p><?= htmlspecialchars($_SESSION['gebruikersnaam'] ?? '') ?> · <?= htmlspecialchars($_SESSION['rol'] ?? 'Lid') ?></p>
     </div>
   </div>
 
@@ -162,19 +168,23 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
   <div class="section-card">
     <h2>Mijn Gegevens</h2>
     <form method="POST">
-      <div class="form-row">
+      <div class="form-row-3">
         <div class="form-group">
-          <label>Naam</label>
-          <input type="text" name="naam" required value="<?= htmlspecialchars($lid['naam']) ?>">
+          <label>Voornaam</label>
+          <input type="text" name="voornaam" required value="<?= htmlspecialchars($gebruiker['Voornaam']) ?>">
         </div>
         <div class="form-group">
-          <label>Telefoonnummer</label>
-          <input type="tel" name="telefoon" required value="<?= htmlspecialchars($lid['telefoon']) ?>">
+          <label>Tussenvoegsel</label>
+          <input type="text" name="tussenvoegsel" value="<?= htmlspecialchars($gebruiker['Tussenvoegsel'] ?? '') ?>">
+        </div>
+        <div class="form-group">
+          <label>Achternaam</label>
+          <input type="text" name="achternaam" required value="<?= htmlspecialchars($gebruiker['Achternaam']) ?>">
         </div>
       </div>
       <div class="form-group">
-        <label>E-mailadres</label>
-        <input type="email" name="email" required value="<?= htmlspecialchars($lid['email']) ?>">
+        <label>Gebruikersnaam</label>
+        <input type="text" value="<?= htmlspecialchars($gebruiker['Gebruikersnaam']) ?>" readonly>
       </div>
       <button type="submit" name="update_profile" class="save-btn">
         Opslaan
