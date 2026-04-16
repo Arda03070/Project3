@@ -13,6 +13,7 @@ if (isset($_SESSION['lid_id'])) {
 
 session_destroy();
 
-header("Location: index.html");
+header("Location: index.php");
 exit;
 ?>
+

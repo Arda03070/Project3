@@ -117,7 +117,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div class="auth-left">
   <div class="auth-left-bg"></div>
   <div class="auth-left-content">
-    <a href="index.html" class="logo">Fit<span>For</span>Fun</a>
+    <a href="index.php" class="logo">Fit<span>For</span>Fun</a>
     <div class="auth-left-bottom">
       <h2>Welkom<br>Terug.</h2>
       <p>Log in en ga verder met jouw journey.</p>
@@ -159,3 +159,4 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 </div>
 </body>
 </html>
+

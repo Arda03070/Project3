@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -337,18 +338,23 @@ footer { background: var(--dark2); border-top: 1px solid rgba(255,255,255,0.07);
 <body>
 
 <header>
-  <a href="index.html" class="logo">FIT<span>FOR</span>FUN</a>
+  <a href="index.php" class="logo">FIT<span>FOR</span>FUN</a>
   <nav>
     <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="lessen.html">Lessen</a></li>
-      <li><a href="abonnement.html">Abonnement</a></li>
-      <li><a href="contact.html" class="active">Contact</a></li>
+      <li><a href="index.php">Home</a></li>
+      <li><a href="lessen.php">Lessen</a></li>
+      <li><a href="abonnement.php">Abonnement</a></li>
+      <li><a href="contact.php" class="active">Contact</a></li>
     </ul>
   </nav>
   <div class="nav-cta">
-    <a href="login.php" class="btn-ghost">Inloggen</a>
-    <a href="register.php" class="btn-red">Gratis starten</a>
+    <?php if(isset($_SESSION['lid_id'])): ?>
+      <a href="profile.php" class="btn-ghost">Mijn Profiel</a>
+      <a href="logout.php" class="btn-red">Uitloggen</a>
+    <?php else: ?>
+      <a href="login.php" class="btn-ghost">Inloggen</a>
+      <a href="register.php" class="btn-red">Gratis starten</a>
+    <?php endif; ?>
   </div>
   <button class="burger" id="burgerBtn" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -356,10 +362,10 @@ footer { background: var(--dark2); border-top: 1px solid rgba(255,255,255,0.07);
 </header>
 
 <div class="menu" id="mobileMenu">
-  <a href="index.html">Home</a>
-  <a href="lessen.html">Lessen</a>
-  <a href="abonnement.html">Abonnement</a>
-  <a href="contact.html">Contact</a>
+  <a href="index.php">Home</a>
+  <a href="lessen.php">Lessen</a>
+  <a href="abonnement.php">Abonnement</a>
+  <a href="contact.php">Contact</a>
   <a href="login.php">Inloggen</a>
   <a href="register.php" style="color:var(--red)">Gratis starten →</a>
 </div>
@@ -512,15 +518,20 @@ footer { background: var(--dark2); border-top: 1px solid rgba(255,255,255,0.07);
     <div class="footer-links">
       <div class="footer-col">
         <h4>Navigatie</h4>
-        <a href="index.html">Home</a>
-        <a href="lessen.html">Lessen</a>
-        <a href="abonnement.html">Abonnement</a>
-        <a href="contact.html">Contact</a>
+        <a href="index.php">Home</a>
+        <a href="lessen.php">Lessen</a>
+        <a href="abonnement.php">Abonnement</a>
+        <a href="contact.php">Contact</a>
       </div>
       <div class="footer-col">
         <h4>Account</h4>
-        <a href="login.php">Inloggen</a>
-        <a href="register.php">Registreren</a>
+        <?php if(isset($_SESSION['lid_id'])): ?>
+    <a href="profile.php">Mijn Profiel</a>
+    <a href="logout.php">Uitloggen</a>
+  <?php else: ?>
+    <a href="login.php">Inloggen</a>
+    <a href="register.php">Registreren</a>
+  <?php endif; ?>
         <a href="profile.php">Mijn Profiel</a>
       </div>
       <div class="footer-col">
@@ -567,3 +578,5 @@ function submitForm() {
 </script>
 </body>
 </html>
+
+

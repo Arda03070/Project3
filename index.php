@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -7,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="css/style.css">
 <style>
 
 /* ─── RESET & BASE ─── */
@@ -705,12 +706,17 @@ footer {
 
 <!-- MOBILE MENU -->
 <nav class="menu" id="menu">
-  <a href="lessen.html">Home</a>
-  <a href="lessen.html">Lessen</a>
-  <a href="#">Abonnement</a>
-  <a href="#">Contact</a>
-  <a href="../login.php">Inloggen</a>
-  <a href="../register.php">Registreren</a>
+  <a href="index.php">Home</a>
+  <a href="lessen.php">Lessen</a>
+  <a href="abonnement.php">Abonnement</a>
+  <a href="contact.php">Contact</a>
+  <?php if(isset($_SESSION['lid_id'])): ?>
+    <a href="profile.php">Mijn Profiel</a>
+    <a href="logout.php">Uitloggen</a>
+  <?php else: ?>
+    <a href="login.php">Inloggen</a>
+    <a href="register.php">Registreren</a>
+  <?php endif; ?>
 </nav>
 
 <!-- HEADER -->
@@ -718,15 +724,20 @@ footer {
   <div class="logo">Fit<span>For</span>Fun</div>
 
   <ul class="nav-links">
-    <li><a href="lessen.html">Home</a></li>
-    <li><a href="lessen.html">Lessen</a></li>
-    <li><a href="abonnement.html">Abonnement</a></li> 
-    <li><a href="contact.html">Contact</a></li> 
+    <li><a href="index.php">Home</a></li>
+    <li><a href="lessen.php">Lessen</a></li>
+    <li><a href="abonnement.php">Abonnement</a></li> 
+    <li><a href="contact.php">Contact</a></li> 
   </ul>
 
   <div class="nav-cta">
-    <a href="../login.php" class="btn-ghost">Inloggen</a>
-    <a href="../register.php" class="btn-red">Gratis starten</a>
+    <?php if(isset($_SESSION['lid_id'])): ?>
+      <a href="profile.php" class="btn-ghost">Mijn Profiel</a>
+      <a href="logout.php" class="btn-red">Uitloggen</a>
+    <?php else: ?>
+      <a href="login.php" class="btn-ghost">Inloggen</a>
+      <a href="register.php" class="btn-red">Gratis starten</a>
+    <?php endif; ?>
   </div>
 
   <div class="burger" id="burgerBtn" onclick="toggleMenu()">
@@ -750,7 +761,7 @@ footer {
     </p>
 
     <div class="hero-actions">
-      <a href="lessen.html" class="btn-primary">
+      <a href="lessen.php" class="btn-primary">
         Start Vandaag
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -839,7 +850,7 @@ footer {
         <span class="section-label">Ons aanbod</span>
         <h2 class="section-title">Kies jouw les</h2>
       </div>
-      <a href="lessen.html" class="btn-outline">Alle lessen →</a>
+      <a href="lessen.php" class="btn-outline">Alle lessen →</a>
     </div>
 
     <div class="classes-grid">
@@ -935,8 +946,8 @@ footer {
     <div class="footer-links">
       <div class="footer-col">
         <h4>Navigatie</h4>
-        <a href="lessen.html">Home</a>
-        <a href="lessen.html">Lessen</a>
+        <a href="lessen.php">Home</a>
+        <a href="lessen.php">Lessen</a>
         <a href="#">Abonnement</a>
         <a href="#">Contact</a>
       </div>
@@ -982,3 +993,5 @@ footer {
 
 </body>
 </html>
+
+

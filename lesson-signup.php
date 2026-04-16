@@ -1,3 +1,35 @@
+<?php 
+session_start();
+include 'db_config.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'book') {
+    header('Content-Type: application/json');
+    if (!isset($_SESSION['lid_id'])) {
+        echo json_encode(['success' => false, 'msg' => 'Je moet ingelogd zijn om te reserveren.']);
+        exit;
+    }
+    
+    $lessonName = $_POST['lessonName'] ?? 'Onbekende Les';
+    $uid = $_SESSION['lid_id'];
+    
+    try {
+        $stmt = $conn->prepare("SELECT Voornaam, Tussenvoegsel, Achternaam FROM gebruiker WHERE Id = ?");
+        $stmt->execute([$uid]);
+        $u = $stmt->fetch();
+        
+        $datum = date('Y-m-d', strtotime('+1 week'));
+        $tijd = '18:00:00';
+        
+        $ins = $conn->prepare("INSERT INTO reservering (Voornaam, Tussenvoegsel, Achternaam, Nummer, Datum, Tijd, Reserveringstatus, Opmerking) VALUES (?, ?, ?, ?, ?, ?, 'Gereserveerd', ?)");
+        $ins->execute([$u['Voornaam'], $u['Tussenvoegsel'], $u['Achternaam'], $uid, $datum, $tijd, "Les: " . $lessonName]);
+        
+        echo json_encode(['success' => true]);
+    } catch(Exception $e) {
+        echo json_encode(['success' => false, 'msg' => $e->getMessage()]);
+    }
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -165,24 +197,35 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
 
 <div class="overlay" id="overlay" onclick="closeMenu()"></div>
 <nav class="menu" id="menu">
-  <a href="index.html">Home</a>
-  <a href="lessen.html">Lessen</a>
-  <a href="#">Abonnement</a>
-  <a href="../login.php">Inloggen</a>
-  <a href="../register.php">Registreren</a>
+  <a href="index.php">Home</a>
+  <a href="lessen.php">Lessen</a>
+  <a href="abonnement.php">Abonnement</a>
+  <a href="contact.php">Contact</a>
+  <?php if(isset($_SESSION['lid_id'])): ?>
+    <a href="profile.php">Mijn Profiel</a>
+    <a href="logout.php">Uitloggen</a>
+  <?php else: ?>
+    <a href="login.php">Inloggen</a>
+    <a href="register.php">Registreren</a>
+  <?php endif; ?>
 </nav>
 
 <header>
-  <a href="index.html" class="logo">Fit<span>For</span>Fun</a>
+  <a href="index.php" class="logo">Fit<span>For</span>Fun</a>
   <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="lessen.html">Lessen</a></li>
-    <li><a href="#">Abonnement</a></li>
-    <li><a href="#">Contact</a></li>
+    <li><a href="index.php">Home</a></li>
+    <li><a href="lessen.php">Lessen</a></li>
+    <li><a href="abonnement.php">Abonnement</a></li>
+    <li><a href="contact.php">Contact</a></li>
   </ul>
   <div class="nav-cta">
-    <a href="../login.php" class="btn-ghost">Inloggen</a>
-    <a href="../register.php" class="btn-red">Registreren</a>
+    <?php if(isset($_SESSION['lid_id'])): ?>
+      <a href="profile.php" class="btn-ghost">Mijn Profiel</a>
+      <a href="logout.php" class="btn-red">Uitloggen</a>
+    <?php else: ?>
+      <a href="login.php" class="btn-ghost">Inloggen</a>
+      <a href="register.php" class="btn-red">Gratis starten</a>
+    <?php endif; ?>
   </div>
   <div class="burger" id="burgerBtn" onclick="toggleMenu()">
     <span></span><span></span><span></span>
@@ -195,7 +238,7 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
   <div class="signup-left">
     <div class="signup-left-bg"></div>
     <div class="signup-left-content">
-      <a href="lessen.html" class="back-link">
+      <a href="lessen.php" class="back-link">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         Terug naar lessen
       </a>
@@ -226,11 +269,11 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
       <div class="form-row">
         <div class="form-group">
           <label>Voornaam *</label>
-          <input type="text" id="voornaam" placeholder="Jan" required>
+          <input type="text" id="voornaam" placeholder="Jan" required value="<?= isset($_SESSION['naam']) ? htmlspecialchars(explode(' ', $_SESSION['naam'])[0]) : '' ?>">
         </div>
         <div class="form-group">
           <label>Achternaam *</label>
-          <input type="text" id="achternaam" placeholder="Jansen" required>
+          <input type="text" id="achternaam" placeholder="Jansen" required value="<?= isset($_SESSION['naam']) ? htmlspecialchars(explode(' ', array_slice(explode(' ', $_SESSION['naam']), -1)[0])[0]) : '' ?>">
         </div>
       </div>
 
@@ -300,7 +343,7 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
   <div class="success-icon">✓</div>
   <h2>Gelukt!</h2>
   <p id="successMsg">Je bent ingeschreven. Je ontvangt een bevestiging per mail. Welkom bij FitForFun!</p>
-  <a href="lessen.html">← Terug naar lessen</a>
+  <a href="lessen.php">← Terug naar lessen</a>
 </div>
 
 <script>
@@ -330,7 +373,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const p=new URLSearchParams(window.location.search);
   lessonName=p.get('lesson');
   lessonPrice=parseFloat(p.get('price'));
-  if(!lessonName||!lessonPrice){window.location.href='lessen.html';return;}
+  if(!lessonName||!lessonPrice){window.location.href='lessen.php';return;}
 
   document.getElementById('lessonName').textContent=lessonName;
   document.getElementById('lessonDesc').textContent=descriptions[lessonName]||'Professionele fitnesles.';
@@ -350,10 +393,27 @@ document.getElementById('signupForm').addEventListener('submit',e=>{
   e.preventDefault();
   const naam=document.getElementById('voornaam').value;
   const m=parseInt(document.getElementById('maanden').value);
-  document.getElementById('successMsg').textContent=
-    `${naam}, je bent ingeschreven voor ${lessonName} (${m} maand${m>1?'en':''}). Je ontvangt een bevestiging per mail. Welkom bij FitForFun!`;
-  document.getElementById('successOverlay').classList.add('show');
+  
+  const formData = new FormData();
+  formData.append('action', 'book');
+  formData.append('lessonName', lessonName);
+  
+  fetch('lesson-signup.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+      if(data.success) {
+        document.getElementById('successMsg').textContent=
+          `${naam}, je bent ingeschreven voor ${lessonName} (${m} maand${m>1?'en':''}). Je vindt de reservering in je profiel. Welkom bij FitForFun!`;
+        document.getElementById('successOverlay').classList.add('show');
+      } else {
+        alert("Kon niet inschrijven: " + data.msg);
+      }
+    }).catch(err => {
+      alert("Er ging iets mis met de verbinding.");
+    });
 });
 </script>
 </body>
 </html>
+
+

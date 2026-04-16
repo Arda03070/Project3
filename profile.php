@@ -19,6 +19,11 @@ try {
     ");
     $stmt->execute([$lid_id]);
     $gebruiker = $stmt->fetch();
+    
+    // Fetch reserveringen summary
+    $stmt2 = $conn->prepare("SELECT Opmerking, Datum, Tijd, Reserveringstatus FROM reservering WHERE Nummer = ? ORDER BY Datum DESC, Tijd DESC");
+    $stmt2->execute([$lid_id]);
+    $reserveringen = $stmt2->fetchAll();
 } catch (PDOException $e) {
     $error = "Fout bij laden gegevens: " . $e->getMessage();
 }
@@ -132,17 +137,25 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
   .page{padding:100px 20px 60px;}
   .form-row,.form-row-3{grid-template-columns:1fr;}
   .section-card{padding:24px 20px;}
+  .quick-stats{grid-template-columns:1fr;}
 }
+.quick-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:40px;}
+.stat-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);padding:24px;border-radius:14px;text-align:center;}
+.stat-box h3{font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.stat-box p{font-family:var(--font-display);font-size:32px;color:var(--red);line-height:1;}
+
 </style>
 </head>
 <body>
 
 <header>
-  <a href="index.html" class="logo">Fit<span>For</span>Fun</a>
+  <a href="index.php" class="logo">Fit<span>For</span>Fun</a>
   <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="lessen.html">Lessen</a></li>
-    <li><a href="profile.php">Mijn Profiel</a></li>
+    <li><a href="index.php">Home</a></li>
+    <li><a href="lessen.php">Lessen</a></li>
+    <li><a href="abonnement.php">Abonnement</a></li>
+    <li><a href="contact.php">Contact</a></li>
+    <li><a href="profile.php" style="color:var(--red);">Mijn Profiel</a></li>
   </ul>
   <a href="logout.php" class="logout-link">Uitloggen</a>
 </header>
@@ -153,7 +166,22 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
     <div class="profile-avatar"><?= strtoupper(substr($_SESSION['naam'], 0, 1)) ?></div>
     <div class="profile-hero-text">
       <h1>Hoi, <?= htmlspecialchars(explode(' ', $_SESSION['naam'])[0]) ?>.</h1>
-      <p><?= htmlspecialchars($_SESSION['gebruikersnaam'] ?? '') ?> · <?= htmlspecialchars($_SESSION['rol'] ?? 'Lid') ?></p>
+      <p><?= htmlspecialchars($_SESSION['gebruikersnaam'] ?? '') ?> · Welkom in je dashboard</p>
+    </div>
+  </div>
+
+  <div class="quick-stats">
+    <div class="stat-box">
+      <h3>Jouw Rol</h3>
+      <p><?= htmlspecialchars($_SESSION['rol'] ?? 'Lid') ?></p>
+    </div>
+    <div class="stat-box">
+      <h3>Status</h3>
+      <p>Actief</p>
+    </div>
+    <div class="stat-box">
+      <h3>Mijn Lessen</h3>
+      <p><?= count($reserveringen) ?></p>
     </div>
   </div>
 
@@ -218,6 +246,33 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
     </form>
   </div>
 
+  <!-- MIJN RESERVERINGEN -->
+  <div class="section-card">
+    <h2>Mijn Reserveringen</h2>
+    <?php if (empty($reserveringen)): ?>
+        <p style="color:var(--gray);font-size:14px;">Je hebt momenteel geen lessen gereserveerd. <a href="lessen.php" style="color:var(--red);text-decoration:none;">Bekijk het rooster →</a></p>
+    <?php else: ?>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <?php foreach ($reserveringen as $r): 
+                $lesNaam = str_replace("Les: ", "", $r['Opmerking']);
+            ?>
+            <div style="background:rgba(255,255,255,.05);padding:16px 20px;border-radius:10px;border:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-family:var(--font-display);font-size:24px;color:#fff;margin-bottom:4px;"><?= htmlspecialchars($lesNaam) ?></div>
+                    <div style="font-size:13px;color:rgba(255,255,255,.6);">
+                        📅 <?= htmlspecialchars($r['Datum']) ?> om <?= substr($r['Tijd'], 0, 5) ?>
+                    </div>
+                </div>
+                <div style="background:<?= $r['Reserveringstatus']=='Gereserveerd' ? 'rgba(34,197,94,.1)' : 'rgba(255,255,255,.1)' ?>;color:<?= $r['Reserveringstatus']=='Gereserveerd' ? '#86efac' : '#fff' ?>;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:100px;">
+                    <?= htmlspecialchars($r['Reserveringstatus']) ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+  </div>
+
 </div>
 </body>
 </html>
+

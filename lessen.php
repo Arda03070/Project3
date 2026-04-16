@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -124,25 +125,35 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
 
 <div class="overlay" id="overlay" onclick="closeMenu()"></div>
 <nav class="menu" id="menu">
-  <a href="index.html">Home</a>
-  <a href="lessen.html">Lessen</a>
-  <a href="#">Abonnement</a>
-  <a href="#">Contact</a>
-  <a href="../login.php">Inloggen</a>
-  <a href="../register.php">Registreren</a>
+  <a href="index.php">Home</a>
+  <a href="lessen.php">Lessen</a>
+  <a href="abonnement.php">Abonnement</a>
+  <a href="contact.php">Contact</a>
+  <?php if(isset($_SESSION['lid_id'])): ?>
+    <a href="profile.php">Mijn Profiel</a>
+    <a href="logout.php">Uitloggen</a>
+  <?php else: ?>
+    <a href="login.php">Inloggen</a>
+    <a href="register.php">Registreren</a>
+  <?php endif; ?>
 </nav>
 
 <header>
-  <a href="index.html" class="logo">Fit<span>For</span>Fun</a>
+  <a href="index.php" class="logo">Fit<span>For</span>Fun</a>
   <ul class="nav-links">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="lessen.html" class="active">Lessen</a></li>
-    <li><a href="#">Abonnement</a></li>
-    <li><a href="#">Contact</a></li>
+    <li><a href="index.php">Home</a></li>
+    <li><a href="lessen.php" class="active">Lessen</a></li>
+    <li><a href="abonnement.php">Abonnement</a></li>
+    <li><a href="contact.php">Contact</a></li>
   </ul>
   <div class="nav-cta">
-    <a href="../login.php" class="btn-ghost">Inloggen</a>
-    <a href="../register.php" class="btn-red">Gratis starten</a>
+    <?php if(isset($_SESSION['lid_id'])): ?>
+      <a href="profile.php" class="btn-ghost">Mijn Profiel</a>
+      <a href="logout.php" class="btn-red">Uitloggen</a>
+    <?php else: ?>
+      <a href="login.php" class="btn-ghost">Inloggen</a>
+      <a href="register.php" class="btn-red">Gratis starten</a>
+    <?php endif; ?>
   </div>
   <div class="burger" id="burgerBtn" onclick="toggleMenu()">
     <span></span><span></span><span></span>
@@ -172,7 +183,7 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
 <section class="lessons-section">
   <div class="lessons-grid" id="lessonsGrid">
 
-    <a href="lesson-signup.html?lesson=Yoga&price=15" class="lesson-card" data-level="rustig" style="animation-delay:.05s">
+    <a href="lesson-signup.php?lesson=Yoga&price=15" class="lesson-card" data-level="rustig" style="animation-delay:.05s">
       <div class="lesson-img">
         <img class="lesson-img-bg" src="../img/yoga.jpg" alt="Yoga" onerror="this.outerHTML='<div class=\'lesson-img-placeholder\'>🧘</div>'">
         <div class="lesson-level-badge">Alle niveaus</div>
@@ -192,7 +203,7 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
       </div>
     </a>
 
-    <a href="lesson-signup.html?lesson=HIIT&price=20" class="lesson-card" data-level="intensief" style="animation-delay:.1s">
+    <a href="lesson-signup.php?lesson=HIIT&price=20" class="lesson-card" data-level="intensief" style="animation-delay:.1s">
       <div class="lesson-img">
         <img class="lesson-img-bg" src="../img/hit.jpg" alt="HIIT" onerror="this.outerHTML='<div class=\'lesson-img-placeholder\'>🔥</div>'">
         <div class="lesson-level-badge">Gevorderd</div>
@@ -212,7 +223,7 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
       </div>
     </a>
 
-    <a href="lesson-signup.html?lesson=Spinning&price=18" class="lesson-card" data-level="gemiddeld" style="animation-delay:.15s">
+    <a href="lesson-signup.php?lesson=Spinning&price=18" class="lesson-card" data-level="gemiddeld" style="animation-delay:.15s">
       <div class="lesson-img">
         <img class="lesson-img-bg" src="../img/spin.jpg" alt="Spinning" onerror="this.outerHTML='<div class=\'lesson-img-placeholder\'>🚴</div>'">
         <div class="lesson-level-badge">Gemiddeld</div>
@@ -232,7 +243,7 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
       </div>
     </a>
 
-    <a href="lesson-signup.html?lesson=Pilates&price=15" class="lesson-card" data-level="rustig" style="animation-delay:.2s">
+    <a href="lesson-signup.php?lesson=Pilates&price=15" class="lesson-card" data-level="rustig" style="animation-delay:.2s">
       <div class="lesson-img">
         <img class="lesson-img-bg" src="../img/pil.jpg" alt="Pilates" onerror="this.outerHTML='<div class=\'lesson-img-placeholder\'>🤸</div>'">
         <div class="lesson-level-badge">Alle niveaus</div>
@@ -252,7 +263,7 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
       </div>
     </a>
 
-    <a href="lesson-signup.html?lesson=Zumba&price=15" class="lesson-card" data-level="gemiddeld" style="animation-delay:.25s">
+    <a href="lesson-signup.php?lesson=Zumba&price=15" class="lesson-card" data-level="gemiddeld" style="animation-delay:.25s">
       <div class="lesson-img">
         <img class="lesson-img-bg" src="../img/zumba.jpg" alt="Zumba" onerror="this.outerHTML='<div class=\'lesson-img-placeholder\'>💃</div>'">
         <div class="lesson-level-badge">Alle niveaus</div>
@@ -272,7 +283,7 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
       </div>
     </a>
 
-    <a href="lesson-signup.html?lesson=Krachttraining&price=20" class="lesson-card" data-level="intensief" style="animation-delay:.3s">
+    <a href="lesson-signup.php?lesson=Krachttraining&price=20" class="lesson-card" data-level="intensief" style="animation-delay:.3s">
       <div class="lesson-img">
         <img class="lesson-img-bg" src="../img/kracht.jpg" alt="Krachttraining" onerror="this.outerHTML='<div class=\'lesson-img-placeholder\'>💪</div>'">
         <div class="lesson-level-badge">Alle niveaus</div>
@@ -325,3 +336,5 @@ document.querySelectorAll('.lesson-card').forEach(el=>{el.style.cssText+='opacit
 </script>
 </body>
 </html>
+
+
