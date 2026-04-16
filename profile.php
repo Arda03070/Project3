@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include 'db_config.php';
 
 if (!isset($_SESSION['lid_id'])) {
@@ -155,7 +155,11 @@ header{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:
     <li><a href="lessen.php">Lessen</a></li>
     <li><a href="abonnement.php">Abonnement</a></li>
     <li><a href="contact.php">Contact</a></li>
-    <li><a href="profile.php" style="color:var(--red);">Mijn Profiel</a></li>
+    <li><?php if(isset($_SESSION['rol']) && $_SESSION['rol'] === 'Administrator'): ?>
+        <a href="admin.php" style="color:var(--red);">Dashboard</a>
+      <?php else: ?>
+        <a href="profile.php" style="color:var(--red);">Mijn Profiel</a>
+      <?php endif; ?></li>
   </ul>
   <a href="logout.php" class="logout-link">Uitloggen</a>
 </header>

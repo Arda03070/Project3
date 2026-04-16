@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
 session_start();
 include 'db_config.php';
 
@@ -202,7 +202,11 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
   <a href="abonnement.php">Abonnement</a>
   <a href="contact.php">Contact</a>
   <?php if(isset($_SESSION['lid_id'])): ?>
-    <a href="profile.php">Mijn Profiel</a>
+    <?php if(isset($_SESSION['rol']) && $_SESSION['rol'] === 'Administrator'): ?>
+      <a href="admin.php">Dashboard</a>
+    <?php else: ?>
+      <a href="profile.php">Mijn Profiel</a>
+    <?php endif; ?>
     <a href="logout.php">Uitloggen</a>
   <?php else: ?>
     <a href="login.php">Inloggen</a>
@@ -220,7 +224,11 @@ footer{background:var(--dark2);border-top:1px solid rgba(255,255,255,.07);paddin
   </ul>
   <div class="nav-cta">
     <?php if(isset($_SESSION['lid_id'])): ?>
-      <a href="profile.php" class="btn-ghost">Mijn Profiel</a>
+      <?php if(isset($_SESSION['rol']) && $_SESSION['rol'] === 'Administrator'): ?>
+        <a href="admin.php" class="btn-ghost">Dashboard</a>
+      <?php else: ?>
+        <a href="profile.php" class="btn-ghost">Mijn Profiel</a>
+      <?php endif; ?>
       <a href="logout.php" class="btn-red">Uitloggen</a>
     <?php else: ?>
       <a href="login.php" class="btn-ghost">Inloggen</a>
