@@ -5,6 +5,7 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Ontvang formulier data en verwijder overbodige spaties
     $voornaam = trim($_POST['voornaam'] ?? '');
     $tussenvoegsel = trim($_POST['tussenvoegsel'] ?? '');
     $achternaam = trim($_POST['achternaam'] ?? '');
@@ -14,51 +15,59 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $wachtwoord = $_POST['wachtwoord'] ?? '';
     $confirm_wachtwoord = $_POST['confirm_wachtwoord'] ?? '';
     
+    // --- VALIDATIE BLOK ---
     if (empty($voornaam) || empty($achternaam) || empty($gebruikersnaam) || empty($mobiel) || empty($email) || empty($wachtwoord)) {
         $error = "Alle verplichte velden moeten ingevuld worden!";
     } elseif (!ctype_upper(mb_substr($voornaam, 0, 1))) {
+        // De eerste letter van de voornaam moet een hoofdletter zijn
         $error = "Je voornaam moet beginnen met een hoofdletter!";
     } elseif ($wachtwoord !== $confirm_wachtwoord) {
         $error = "Wachtwoorden komen niet overeen!";
     } elseif (!preg_match('/^06[\s\-]?\d{2}[\s\-]?\d{2}[\s\-]?\d{2}[\s\-]?\d{2}$/', $mobiel)) {
+        // Controleer of het telefoonnummer met 06 begint via een Regular Expression (RegEx)
         $error = "Telefoonnummer moet beginnen met 06!";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "E-mailadres is ongeldig!";
     } else {
         try {
-            // Check of gebruikersnaam al bestaat
+            // Check in de database of deze gebruikersnaam al bezet is
             $check = $conn->prepare("SELECT Id FROM gebruiker WHERE Gebruikersnaam = ?");
             $check->execute([$gebruikersnaam]);
             if ($check->rowCount() > 0) {
                 $error = "Deze gebruikersnaam is al in gebruik!";
             } else {
-                // Check of email al bestaat in lid tabel
+                // Check of het e-mailadres al is vastgelegd
                 $checkEmail = $conn->prepare("SELECT Id FROM lid WHERE Email = ?");
                 $checkEmail->execute([$email]);
                 if ($checkEmail->rowCount() > 0) {
                     $error = "Dit e-mailadres is al geregistreerd!";
                 } else {
+                    // Start de database transactie: als één query faalt, wordt alles teruggedraaid (rollback)
                     $conn->beginTransaction();
                     
-                    // 1. Gebruiker aanmaken
+                    // 1. Basisgegevens opslaan in de `gebruiker` tabel
                     $hashed_password = password_hash($wachtwoord, PASSWORD_BCRYPT);
                     $stmt = $conn->prepare("INSERT INTO gebruiker (Voornaam, Tussenvoegsel, Achternaam, Gebruikersnaam, Wachtwoord) VALUES (?, ?, ?, ?, ?)");
                     $stmt->execute([$voornaam, $tussenvoegsel, $achternaam, $gebruikersnaam, $hashed_password]);
-                    $gebruikerId = $conn->lastInsertId();
+                    $gebruikerId = $conn->lastInsertId(); // Haal het nieuwe ID op
                     
-                    // 2. Rol toekennen (Lid)
+                    // 2. Rol toekennen: elke nieuwe registratie is standaard een 'Lid'
                     $stmt = $conn->prepare("INSERT INTO rol (GebruikerId, Naam) VALUES (?, 'Lid')");
                     $stmt->execute([$gebruikerId]);
                     
-                    // 3. Lid aanmaken met relatienummer
+                    // 3. Aanvullende gegevens opslaan in de `lid` tabel inclusief automatisch doornummeren
+                    // Relatienummer is max nummer + 1 (als de tabel leeg is, start bij 200)
                     $stmtMax = $conn->query("SELECT COALESCE(MAX(Relatienummer), 200) + 1 AS volgend FROM lid");
                     $volgendNummer = $stmtMax->fetch()['volgend'];
                     
                     $stmt = $conn->prepare("INSERT INTO lid (Voornaam, Tussenvoegsel, Achternaam, Relatienummer, Mobiel, Email) VALUES (?, ?, ?, ?, ?, ?)");
                     $stmt->execute([$voornaam, $tussenvoegsel, $achternaam, $volgendNummer, $mobiel, $email]);
                     
+                    // Bevestig de transactie en maak deze definitief
                     $conn->commit();
                     $success = "Registratie gelukt! Je kunt nu inloggen met gebruikersnaam: " . htmlspecialchars($gebruikersnaam);
+                    
+                    // Maak POST-array leeg zodat het formulier leeg is na succesvolle registratie
                     $_POST = [];
                 }
             }
