@@ -28,7 +28,7 @@ $stmt = $conn->query("
     WHERE g.IsActief = 1
     ORDER BY g.Datumaangemaakt DESC
 ");
-$leden = $stmt->fetchAll();
+// Leden worden nu via AJAX geladen
 ?>
 <!DOCTYPE html>
 <html lang="nl">
@@ -107,12 +107,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .tbl-search::placeholder{color:var(--gray);}
 .tbl-select{background:rgba(255,255,255,.05);border:1px solid var(--border);color:#fff;font-family:var(--font-body);font-size:13px;padding:8px 14px;border-radius:8px;outline:none;cursor:pointer;}
 .tbl-count{font-size:13px;color:var(--gray2);}
-table{width:100%;border-collapse:collapse;}
+table{width:100%;border-collapse:collapse;min-width:600px;}
 thead tr{background:rgba(255,255,255,.03);}
-th{padding:14px 20px;text-align:left;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);border-bottom:1px solid var(--border);}
-td{padding:14px 20px;font-size:14px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;}
+th{padding:14px 20px;text-align:left;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:14px 20px;font-size:14px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;white-space:nowrap;}
 tbody tr:hover{background:rgba(255,255,255,.02);}
 tbody tr:last-child td{border-bottom:none;}
+.table-responsive{overflow-x:auto;}
 .no-results{text-align:center;padding:48px 20px;color:var(--gray);font-size:14px;}
 .badge{display:inline-block;padding:3px 10px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:100px;border:1px solid;}
 .badge-admin{background:rgba(230,57,70,.15);border-color:rgba(230,57,70,.3);color:var(--red);}
@@ -205,7 +206,7 @@ tbody tr:last-child td{border-bottom:none;}
 <div class="modal-overlay" id="editModal" onclick="if(event.target===this)closeEditModal()">
   <div class="modal">
     <button class="modal-close" onclick="closeEditModal()">✕</button>
-    <h2>Lid Bewerken</h2>
+    <h2>Gebruiker Bewerken</h2>
     <input type="hidden" id="editLidId">
     <div class="fg"><label>Naam *</label><input type="text" id="editNaam" placeholder="Jan Jansen"></div>
     <div class="fg"><label>E-mailadres *</label><input type="email" id="editEmail" placeholder="jan@email.nl"></div>
@@ -253,6 +254,26 @@ tbody tr:last-child td{border-bottom:none;}
   </div>
 </div>
 
+<!-- MODAL: RESERVERING BEWERKEN -->
+<div class="modal-overlay" id="editResModal" onclick="if(event.target===this)closeEditResModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeEditResModal()">✕</button>
+    <h2>Reservering Bewerken</h2>
+    <input type="hidden" id="editResId">
+    <div class="fg"><label>Status</label>
+      <select id="editResStatus">
+        <option value="Gereserveerd">Gereserveerd</option>
+        <option value="Geannuleerd">Geannuleerd</option>
+        <option value="Afgerond">Afgerond</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel-btn" onclick="closeEditResModal()">Annuleren</button>
+      <button class="save-btn" onclick="saveEditRes()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: BEVESTIG VERWIJDEREN -->
 <div class="modal-overlay" id="deleteModal" onclick="if(event.target===this)closeDeleteModal()">
   <div class="modal" style="max-width:420px;">
@@ -279,6 +300,8 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="nav-section-label">Beheer</div>
     <button class="nav-item" id="nav-leden"   onclick="switchPage('leden',this)"><span class="nav-icon">👥</span> Leden</button>
     <button class="nav-item" id="nav-lessen"  onclick="switchPage('lessen',this)"><span class="nav-icon">🗓</span> Lessen</button>
+    <button class="nav-item" id="nav-medewerkers" onclick="switchPage('medewerkers',this)"><span class="nav-icon">👨‍💼</span> Medewerkers</button>
+    <button class="nav-item" id="nav-reserveringen" onclick="switchPage('reserveringen',this)"><span class="nav-icon">🔖</span> Reserveringen</button>
     <div class="nav-section-label">Systeem</div>
     <button class="nav-item" id="nav-instellingen" onclick="switchPage('instellingen',this)"><span class="nav-icon">⚙️</span> Instellingen</button>
   </nav>
@@ -352,8 +375,10 @@ tbody tr:last-child td{border-bottom:none;}
           </select>
         </div>
       </div>
-      <table><thead><tr><th>Les</th><th>Datum</th><th>Tijd</th><th>Prijs</th><th>Status</th><th>Acties</th></tr></thead>
-      <tbody id="dashLessenTabel"></tbody></table>
+      <div class="table-responsive">
+        <table><thead><tr><th>Les</th><th>Datum</th><th>Tijd</th><th>Prijs</th><th>Status</th><th>Acties</th></tr></thead>
+        <tbody id="dashLessenTabel"></tbody></table>
+      </div>
     </div>
   </div>
 
@@ -388,49 +413,12 @@ tbody tr:last-child td{border-bottom:none;}
           <span class="tbl-count" id="ledenCount"></span>
         </div>
       </div>
-      <table>
-        <thead><tr><th></th><th>Naam</th><th>Email</th><th>Telefoon</th><th>Rol</th><th>Aangemeld</th><th>Acties</th></tr></thead>
-        <tbody id="ledenTabel">
-          <?php foreach($leden as $lid):
-            // JSON encode zodat alle speciale tekens (quotes, apostrofs) veilig zijn
-            $lidJson = json_encode([
-              'id'       => (int)$lid['id'],
-              'naam'     => $lid['naam'],
-              'email'    => $lid['email'],
-              'telefoon' => $lid['telefoon'] ?? '',
-              'rol'      => $lid['rol'],
-            ], JSON_HEX_QUOT | JSON_HEX_APOS);
-          ?>
-          <tr data-id="<?= (int)$lid['id'] ?>" data-rol="<?= htmlspecialchars($lid['rol']) ?>">
-            <td><div class="member-avatar"><?= strtoupper(mb_substr($lid['naam'],0,1)) ?></div></td>
-            <td><?= htmlspecialchars($lid['naam']) ?></td>
-            <td><?= htmlspecialchars($lid['email']) ?></td>
-            <td><?= htmlspecialchars($lid['telefoon'] ?? '—') ?></td>
-            <td>
-              <select class="rol-select"
-                      data-id="<?= (int)$lid['id'] ?>"
-                      data-prev="<?= htmlspecialchars($lid['rol']) ?>"
-                      onchange="updateRol(<?= (int)$lid['id'] ?>,this)">
-                <option value="Lid"            <?= $lid['rol']==='Lid'            ? 'selected':'' ?>>Lid</option>
-                <option value="Administrator"  <?= $lid['rol']==='Administrator'  ? 'selected':'' ?>>Administrator</option>
-                <option value="Medewerker"     <?= $lid['rol']==='Medewerker'     ? 'selected':'' ?>>Medewerker</option>
-                <option value="Gastgebruiker"  <?= $lid['rol']==='Gastgebruiker'  ? 'selected':'' ?>>Gastgebruiker</option>
-              </select>
-            </td>
-            <td><?= htmlspecialchars($lid['aangemeld']) ?></td>
-            <td>
-              <div class="action-group">
-                <button class="edit-btn"
-                        data-lid="<?= htmlspecialchars($lidJson, ENT_QUOTES) ?>"
-                        onclick="openEditModal(this)">✏ Bewerken</button>
-                <button class="del-btn"
-                        onclick="askDeleteLid(<?= (int)$lid['id'] ?>)">✕ Verwijderen</button>
-              </div>
-            </td>
-          </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table>
+          <thead><tr><th></th><th>Naam</th><th>Email</th><th>Telefoon</th><th>Rol</th><th>Aangemeld</th><th>Acties</th></tr></thead>
+          <tbody id="ledenTabel"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -470,10 +458,73 @@ tbody tr:last-child td{border-bottom:none;}
           <span class="tbl-count" id="lessenCount"></span>
         </div>
       </div>
-      <table>
-        <thead><tr><th>Les</th><th>Datum</th><th>Tijd</th><th>Instructeur</th><th>Prijs</th><th>Max</th><th>Status</th><th>Acties</th></tr></thead>
-        <tbody id="lessenTabel"></tbody>
-      </table>
+      <div class="table-responsive">
+        <table>
+          <thead><tr><th>Les</th><th>Datum</th><th>Tijd</th><th>Instructeur</th><th>Prijs</th><th>Max</th><th>Status</th><th>Acties</th></tr></thead>
+          <tbody id="lessenTabel"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEDEWERKERS -->
+  <div class="page" id="page-medewerkers">
+    <div class="section-header"><div><h2>Medewerkers</h2><p>Beheer het personeel</p></div></div>
+    <div class="form-card">
+      <h3>Nieuwe Medewerker</h3>
+      <div class="form-grid">
+        <div class="fg"><label>Voornaam *</label><input id="mwVoornaam" placeholder="Jan"></div>
+        <div class="fg"><label>Tussenvoegsel</label><input id="mwTussenvoegsel" placeholder="de"></div>
+        <div class="fg"><label>Achternaam *</label><input id="mwAchternaam" placeholder="Vries"></div>
+        <div class="fg"><label>E-mail *</label><input id="mwEmail" type="email" placeholder="jan@fitforfun.nl"></div>
+        <div class="fg"><label>Soort</label>
+          <select id="mwSoort">
+            <option value="Beheerder">Beheerder</option>
+            <option value="Manager">Manager</option>
+            <option value="Instructeur">Instructeur</option>
+            <option value="Diskmedewerker">Diskmedewerker</option>
+          </select>
+        </div>
+        <div class="fg"><button class="add-btn" onclick="addMedewerker()">+ Toevoegen</button></div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-top">
+        <h3>Alle Medewerkers</h3>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead><tr><th></th><th>Naam</th><th>Email</th><th>Telefoon</th><th>Rol</th><th>Aangemeld</th><th>Acties</th></tr></thead>
+          <tbody id="medewerkersTabel"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESERVERINGEN -->
+  <div class="page" id="page-reserveringen">
+    <div class="section-header"><div><h2>Reserveringen</h2><p>Beheer de reserveringen</p></div></div>
+    <div class="form-card">
+      <h3>Nieuwe Reservering</h3>
+      <div class="form-grid">
+        <div class="fg"><label>Voornaam *</label><input id="resVoornaam" placeholder="Jan"></div>
+        <div class="fg"><label>Tussenvoegsel</label><input id="resTussenvoegsel" placeholder="de"></div>
+        <div class="fg"><label>Achternaam *</label><input id="resAchternaam" placeholder="Vries"></div>
+        <div class="fg"><label>Datum *</label><input id="resDatum" type="date"></div>
+        <div class="fg"><label>Tijd *</label><input id="resTijd" type="time"></div>
+        <div class="fg"><button class="add-btn" onclick="addReservering()">+ Toevoegen</button></div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-top">
+        <h3>Alle Reserveringen</h3>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead><tr><th>Naam</th><th>Nummer</th><th>Datum</th><th>Tijd</th><th>Status</th><th>Acties</th></tr></thead>
+          <tbody id="reserveringenTabel"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -550,14 +601,24 @@ tbody tr:last-child td{border-bottom:none;}
 
 <script>
 // ═══════════════════════════════════════════════
-//  DATA — lessen worden lokaal opgeslagen
+//  DATA — lessen via database
 // ═══════════════════════════════════════════════
-let lessen = JSON.parse(localStorage.getItem('fff_lessen') || 'null') || [
-  {naam:'Yoga',          datum:'2026-04-15',tijd:'09:00',prijs:12.50,max:15, instructeur:'Lisa van Dam',  status:'Ingepland'},
-  {naam:'Krachttraining',datum:'2026-04-16',tijd:'18:00',prijs:15.00,max:20, instructeur:'Marc de Vries', status:'Ingepland'},
-  {naam:'Spinning',      datum:'2026-04-10',tijd:'19:30',prijs:10.00,max:12, instructeur:'',              status:'Afgerond'}
-];
-function saveLessen(){ localStorage.setItem('fff_lessen', JSON.stringify(lessen)); }
+let lessen = [];
+
+function fetchLessen() {
+  fetch('les_ajax.php')
+    .then(r => r.json())
+    .then(d => {
+      if(d.success) {
+        lessen = d.data;
+        renderLessenPage();
+      } else {
+        toast('Fout bij ophalen lessen: ' + d.error, 'error');
+      }
+    }).catch(e => toast('Verbindingsfout bij ophalen lessen', 'error'));
+}
+// Initiele ophaalactie
+fetchLessen();
 
 // ═══════════════════════════════════════════════
 //  SIDEBAR
@@ -579,11 +640,12 @@ function switchPage(page, btn){
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   if(btn) btn.classList.add('active');
-  const titles = {dashboard:'Dashboard', leden:'Leden', lessen:'Lessen', instellingen:'Instellingen'};
+  const titles = {dashboard:'Dashboard', leden:'Leden', lessen:'Lessen', medewerkers:'Medewerkers', reserveringen:'Reserveringen', instellingen:'Instellingen'};
   document.getElementById('topbarTitle').textContent = titles[page] || page;
   if(page === 'dashboard')    renderDashLessen();
   if(page === 'lessen')       renderLessenPage();
-  if(page === 'leden')        updateLedenCount();
+  if(page === 'leden' || page === 'medewerkers') fetchAlleGebruikers();
+  if(page === 'reserveringen') fetchReserveringen();
   closeSidebar();
 }
 
@@ -710,29 +772,87 @@ function addLid(){
   }).catch(()=>toast('Verbindingsfout','error'));
 }
 
-// Bouwt een HTML-tabelrij voor een lid
-function buildRij(lid, datum){
-  const json = esc(JSON.stringify({id:lid.id,naam:lid.naam,email:lid.email,telefoon:lid.telefoon||'',rol:lid.rol}));
-  return `<tr data-id="${lid.id}" data-rol="${lid.rol}">
-    <td><div class="member-avatar">${lid.naam.charAt(0).toUpperCase()}</div></td>
-    <td>${esc(lid.naam)}</td><td>${esc(lid.email)}</td><td>${esc(lid.telefoon||'—')}</td>
-    <td>
-      <select class="rol-select" data-id="${lid.id}" data-prev="${lid.rol}" onchange="updateRol(${lid.id},this)">
-        <option value="lid"   ${lid.rol==='lid'  ?'selected':''}>Lid</option>
-        <option value="admin" ${lid.rol==='admin'?'selected':''}>Admin</option>
-      </select>
-    </td>
-    <td>${datum}</td>
-    <td><div class="action-group">
-      <button class="edit-btn" data-lid="${json}" onclick="openEditModal(this)">✏ Bewerken</button>
-      <button class="del-btn" onclick="askDeleteLid(${lid.id})">✕ Verwijderen</button>
-    </div></td>
-  </tr>`;
+// ═══════════════════════════════════════════════
+//  GEBRUIKERS (LEDEN & MEDEWERKERS)
+// ═══════════════════════════════════════════════
+let alleGebruikers = [];
+
+function fetchAlleGebruikers() {
+  fetch('get_alle_gebruikers_ajax.php')
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.success) {
+        alleGebruikers = d.data;
+        renderGebruikers();
+      } else {
+        toast('Fout bij ophalen gebruikers', 'error');
+      }
+    }).catch(()=>toast('Verbindingsfout','error'));
 }
 
-// ═══════════════════════════════════════════════
-//  ROL WIJZIGEN
-// ═══════════════════════════════════════════════
+function renderGebruikers() {
+  const ledenFilter = document.getElementById('rolFilter') ? document.getElementById('rolFilter').value : 'alle';
+  const ledenZoek = document.getElementById('ledenSearch') ? document.getElementById('ledenSearch').value.toLowerCase() : '';
+
+  const ledenTabel = document.getElementById('ledenTabel');
+  const mwTabel = document.getElementById('medewerkersTabel');
+  
+  let ledenHTML = '';
+  let mwHTML = '';
+  let ledenAantal = 0;
+
+  alleGebruikers.forEach(g => {
+    // Check if it's a Medewerker or Administrator
+    const isMedewerker = g.rol === 'Administrator' || g.rol === 'Medewerker';
+    
+    // HTML for the row (shared for both)
+    const json = esc(JSON.stringify({id:parseInt(g.id), naam:g.naam, email:g.email, telefoon:g.telefoon||'', rol:g.rol}));
+    const rowHTML = `
+      <tr data-id="${g.id}" data-rol="${g.rol}">
+        <td><div class="member-avatar">${g.naam.charAt(0).toUpperCase()}</div></td>
+        <td>${esc(g.naam)}</td>
+        <td>${esc(g.email)}</td>
+        <td>${esc(g.telefoon || '—')}</td>
+        <td>
+          <select class="rol-select" data-id="${g.id}" data-prev="${g.rol}" onchange="updateRol(${g.id},this)">
+            <option value="Lid" ${g.rol==='Lid'?'selected':''}>Lid</option>
+            <option value="Gastgebruiker" ${g.rol==='Gastgebruiker'?'selected':''}>Gastgebruiker</option>
+            <option value="Medewerker" ${g.rol==='Medewerker'?'selected':''}>Medewerker</option>
+            <option value="Administrator" ${g.rol==='Administrator'?'selected':''}>Administrator</option>
+          </select>
+        </td>
+        <td>${g.aangemeld}</td>
+        <td>
+          <div class="action-group">
+            <button class="edit-btn" data-lid="${json}" onclick="openEditModal(this)">✏ Bewerken</button>
+            <button class="del-btn" onclick="askDeleteLid(${g.id})">✕ Verwijderen</button>
+          </div>
+        </td>
+      </tr>
+    `;
+
+    if (isMedewerker) {
+      mwHTML += rowHTML;
+    } else {
+      // Apply filters only to Leden tab for now
+      if ((ledenFilter === 'alle' || g.rol === ledenFilter) && (g.naam.toLowerCase().includes(ledenZoek) || g.email.toLowerCase().includes(ledenZoek))) {
+        ledenHTML += rowHTML;
+        ledenAantal++;
+      }
+    }
+  });
+
+  if(ledenTabel) ledenTabel.innerHTML = ledenHTML || '<tr><td colspan="7" class="no-results">Geen leden gevonden</td></tr>';
+  if(mwTabel) mwTabel.innerHTML = mwHTML || '<tr><td colspan="7" class="no-results">Geen medewerkers gevonden</td></tr>';
+  
+  const cnt = document.getElementById('ledenCount');
+  if(cnt) cnt.textContent = ledenAantal + (ledenAantal===1?' lid':' leden');
+}
+
+function filterLeden() {
+  renderGebruikers();
+}
+
 function updateRol(id, select){
   const rol = select.value;
   fetch('update_rol_ajax.php',{
@@ -740,8 +860,11 @@ function updateRol(id, select){
     body: JSON.stringify({id, rol})
   })
   .then(r=>r.json()).then(d=>{
-    if(!d.success){ toast('Rol bijwerken mislukt','error'); select.value = select.dataset.prev||'lid'; }
-    else { select.dataset.prev = rol; select.closest('tr').dataset.rol = rol; toast('Rol bijgewerkt naar '+rol); }
+    if(!d.success){ toast('Rol bijwerken mislukt: ' + (d.error||''),'error'); select.value = select.dataset.prev||'Lid'; }
+    else { 
+      toast('Rol bijgewerkt naar '+rol); 
+      fetchAlleGebruikers(); // Ververs data om lid te verplaatsen
+    }
   }).catch(()=>toast('Verbindingsfout','error'));
 }
 
@@ -777,21 +900,9 @@ function saveEdit(){
   })
   .then(r=>r.json()).then(d=>{
     if(d.success){
-      const row = document.querySelector('#ledenTabel tr[data-id="'+id+'"]');
-      if(row){
-        row.cells[0].querySelector('.member-avatar').textContent = naam.charAt(0).toUpperCase();
-        row.cells[1].textContent = naam;
-        row.cells[2].textContent = email;
-        row.cells[3].textContent = telefoon || '—';
-        const sel = row.cells[4].querySelector('select');
-        sel.value = rol; sel.dataset.prev = rol;
-        row.dataset.rol = rol;
-        // Bijwerken data-attribuut zodat volgende bewerking ook klopt
-        const editBtn = row.querySelector('.edit-btn');
-        editBtn.setAttribute('data-lid', esc(JSON.stringify({id:parseInt(id),naam,email,telefoon,rol})));
-      }
       closeEditModal();
       toast(naam + ' bijgewerkt!');
+      fetchAlleGebruikers();
     } else toast('Fout: '+(d.error||'Onbekend'),'error');
   }).catch(()=>toast('Verbindingsfout','error'));
 }
@@ -816,21 +927,32 @@ function closeEditLesModal(){ document.getElementById('editLesModal').classList.
 
 function saveEditLes(){
   const i    = parseInt(document.getElementById('editLesIndex').value);
+  const les  = lessen[i];
+  if (!les) return;
+  const id   = les.id;
   const naam = document.getElementById('editLesNaam').value.trim();
   const datum= document.getElementById('editLesDatum').value;
   const tijd = document.getElementById('editLesTijd').value;
   const prijs= document.getElementById('editLesPrijs').value;
   if(!naam||!datum||!tijd||!prijs){ toast('Naam, datum, tijd en prijs zijn verplicht!','error'); return; }
-  lessen[i] = {
-    naam, datum, tijd,
-    prijs: parseFloat(prijs),
-    max: document.getElementById('editLesMax').value ? parseInt(document.getElementById('editLesMax').value) : null,
-    instructeur: document.getElementById('editLesInstructeur').value.trim(),
-    status: document.getElementById('editLesStatus').value
-  };
-  saveLessen(); renderLessenPage();
-  closeEditLesModal();
-  toast('Les "' + naam + '" bijgewerkt!');
+  
+  const max = document.getElementById('editLesMax').value ? parseInt(document.getElementById('editLesMax').value) : '';
+  const instructeur = document.getElementById('editLesInstructeur').value.trim();
+  const status = document.getElementById('editLesStatus').value;
+
+  fetch('les_ajax.php', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({id, naam, datum, tijd, prijs, max, instructeur, status})
+  }).then(r => r.json()).then(d => {
+    if(d.success) {
+      toast('Les "' + naam + '" bijgewerkt!');
+      closeEditLesModal();
+      fetchLessen();
+    } else {
+      toast('Fout: ' + (d.error || 'Onbekend'), 'error');
+    }
+  }).catch(() => toast('Verbindingsfout', 'error'));
 }
 
 // ═══════════════════════════════════════════════
@@ -842,16 +964,24 @@ function addLes(){
   const tijd  = document.getElementById('lesTijd').value;
   const prijs = document.getElementById('lesPrijs').value;
   if(!naam||!datum||!tijd||!prijs){ toast('Naam, datum, tijd en prijs zijn verplicht!','error'); return; }
-  lessen.unshift({
-    naam, datum, tijd,
-    prijs: parseFloat(prijs),
-    max: document.getElementById('lesMax').value ? parseInt(document.getElementById('lesMax').value) : null,
-    instructeur: document.getElementById('lesInstructeur').value.trim(),
-    status: document.getElementById('lesStatus').value
-  });
-  saveLessen(); renderLessenPage();
-  ['lesNaam','lesDatum','lesTijd','lesPrijs','lesMax','lesInstructeur'].forEach(id=>document.getElementById(id).value='');
-  toast('Les "' + naam + '" toegevoegd!');
+
+  const max   = document.getElementById('lesMax').value ? parseInt(document.getElementById('lesMax').value) : '';
+  const instructeur = document.getElementById('lesInstructeur').value.trim();
+  const status = document.getElementById('lesStatus').value;
+
+  fetch('les_ajax.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({naam, datum, tijd, prijs, max, instructeur, status})
+  }).then(r => r.json()).then(d => {
+    if(d.success) {
+      toast('Les "' + naam + '" toegevoegd!');
+      ['lesNaam','lesDatum','lesTijd','lesPrijs','lesMax','lesInstructeur'].forEach(id=>document.getElementById(id).value='');
+      fetchLessen();
+    } else {
+      toast('Fout: ' + (d.error || 'Onbekend'), 'error');
+    }
+  }).catch(() => toast('Verbindingsfout', 'error'));
 }
 
 // ═══════════════════════════════════════════════
@@ -880,19 +1010,25 @@ function deleteLid(id){
   fetch('delete_lid_ajax.php?id=' + id)
   .then(r=>r.json()).then(d=>{
     if(d.success){
-      // Zoek rij op via data-id (werkt ook na modal-verwijdering waarbij btn niet beschikbaar is)
-      const row = document.querySelector('#ledenTabel tr[data-id="'+id+'"]');
-      if(row) row.remove();
-      updateLedenStats(); updateLedenCount();
-      toast('Lid verwijderd');
+      updateLedenStats(); 
+      fetchAlleGebruikers(); // Ververs data
+      toast('Gebruiker verwijderd');
     } else toast('Fout: '+(d.error||'Onbekend'),'error');
   }).catch(()=>toast('Verbindingsfout','error'));
 }
 function deleteLes(i){
   if(i<0||i>=lessen.length) return;
-  const naam = lessen[i].naam;
-  lessen.splice(i,1); saveLessen(); renderLessenPage();
-  toast('Les "' + naam + '" verwijderd');
+  const les = lessen[i];
+  
+  fetch('les_ajax.php?id=' + les.id, { method: 'DELETE' })
+  .then(r => r.json()).then(d => {
+    if(d.success) {
+      toast('Les "' + les.naam + '" verwijderd');
+      fetchLessen();
+    } else {
+      toast('Fout: ' + (d.error || 'Onbekend'), 'error');
+    }
+  }).catch(() => toast('Verbindingsfout', 'error'));
 }
 
 // ═══════════════════════════════════════════════
@@ -914,14 +1050,7 @@ function updateLedenCount(){
 // ═══════════════════════════════════════════════
 //  FILTERS
 // ═══════════════════════════════════════════════
-function filterLeden(){
-  const q   = document.getElementById('ledenSearch').value.toLowerCase();
-  const rol = document.getElementById('rolFilter').value;
-  document.querySelectorAll('#ledenTabel tr[data-id]').forEach(r=>{
-    r.style.display = (r.textContent.toLowerCase().includes(q) && (rol==='alle'||r.dataset.rol===rol)) ? '' : 'none';
-  });
-  updateLedenCount();
-}
+// Leden worden nu gefilterd in renderGebruikers()
 function globalFilter(){
   const q = document.getElementById('globalSearch').value.toLowerCase();
   document.querySelectorAll('tbody tr').forEach(r=>{
@@ -951,7 +1080,7 @@ function dlCSV(c,f){ const a=document.createElement('a'); a.href='data:text/csv;
 // ═══════════════════════════════════════════════
 //  INSTELLINGEN ACTIES
 // ═══════════════════════════════════════════════
-function clearAllLessen(){ if(!confirm('Alle lessen definitief wissen?')) return; lessen=[]; saveLessen(); renderLessenPage(); toast('Alle lessen gewist'); }
+function clearAllLessen(){ toast('Alle lessen wissen is via de interface uitgeschakeld om dataverlies te voorkomen.', 'info'); }
 function clearStorage(){ if(!confirm('Lokale cache wissen?')) return; localStorage.clear(); toast('Cache gewist. Herladen...','info'); setTimeout(()=>location.reload(),1500); }
 
 // ═══════════════════════════════════════════════
@@ -972,10 +1101,118 @@ new Chart(document.getElementById('ledenChart').getContext('2d'),{
 });
 
 // ═══════════════════════════════════════════════
+//  MEDEWERKERS API
+// ═══════════════════════════════════════════════
+let medewerkers = [];
+function fetchMedewerkers() {
+  fetch('medewerker_ajax.php').then(r=>r.json()).then(d=>{
+    if(d.success) { medewerkers = d.data; renderMedewerkers(); }
+    else toast('Fout bij ophalen medewerkers', 'error');
+  }).catch(()=>toast('Verbindingsfout','error'));
+}
+function renderMedewerkers() {
+  const tbody = document.getElementById('medewerkersTabel');
+  if(!tbody) return;
+  tbody.innerHTML = medewerkers.length ? medewerkers.map(m => `
+    <tr>
+      <td><strong>${esc(m.Voornaam)} ${esc(m.Tussenvoegsel)} ${esc(m.Achternaam)}</strong></td>
+      <td>${m.Nummer}</td>
+      <td><span class="badge badge-lid">${esc(m.Medewerkersoort)}</span></td>
+      <td>
+        <button class="del-btn" onclick="deleteMedewerker(${m.Id})">✕ Verwijderen</button>
+      </td>
+    </tr>
+  `).join('') : '<tr><td colspan="4" class="no-results">Geen medewerkers gevonden</td></tr>';
+}
+function addMedewerker() {
+  const naam = document.getElementById('mwVoornaam').value.trim() + ' ' + document.getElementById('mwTussenvoegsel').value.trim() + ' ' + document.getElementById('mwAchternaam').value.trim();
+  const email = document.getElementById('mwEmail').value.trim();
+  const wachtwoord = 'Start123!';
+  const rol = document.getElementById('mwSoort').value;
+  if(!naam || !email) return toast('Naam en email verplicht!', 'error');
+  fetch('add_lid_ajax.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({naam, email, telefoon:'', wachtwoord, rol}) })
+  .then(r=>r.json()).then(d=>{
+    if(d.success){ 
+      toast('Medewerker toegevoegd met wachtwoord Start123!'); 
+      ['mwVoornaam','mwTussenvoegsel','mwAchternaam','mwEmail'].forEach(id=>document.getElementById(id).value='');
+      fetchAlleGebruikers(); 
+    }
+    else toast(d.error, 'error');
+  });
+}
+function deleteMedewerker(id) { askDeleteLid(id); }
+
+// ═══════════════════════════════════════════════
+//  RESERVERINGEN API
+// ═══════════════════════════════════════════════
+let reserveringen = [];
+function fetchReserveringen() {
+  fetch('reservering_ajax.php').then(r=>r.json()).then(d=>{
+    if(d.success) { reserveringen = d.data; renderReserveringen(); }
+    else toast('Fout bij ophalen reserveringen', 'error');
+  }).catch(()=>toast('Verbindingsfout','error'));
+}
+function renderReserveringen() {
+  const tbody = document.getElementById('reserveringenTabel');
+  if(!tbody) return;
+  tbody.innerHTML = reserveringen.length ? reserveringen.map(r => `
+    <tr>
+      <td><strong>${esc(r.Voornaam)} ${esc(r.Tussenvoegsel)} ${esc(r.Achternaam)}</strong></td>
+      <td>${r.Nummer}</td>
+      <td>${r.Datum}</td>
+      <td>${r.Tijd}</td>
+      <td><span class="${r.Reserveringstatus === 'Gereserveerd' ? 'badge badge-ingepland' : 'badge badge-geannuleerd'}">${esc(r.Reserveringstatus)}</span></td>
+      <td>
+        <div class="action-group">
+          <button class="edit-btn" onclick="openEditResModal(${r.Id}, '${r.Reserveringstatus}')">✏ Bewerken</button>
+          <button class="del-btn" onclick="deleteReservering(${r.Id})">✕ Annuleren</button>
+        </div>
+      </td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" class="no-results">Geen reserveringen gevonden</td></tr>';
+}
+function openEditResModal(id, status) {
+  document.getElementById('editResId').value = id;
+  document.getElementById('editResStatus').value = status;
+  document.getElementById('editResModal').classList.add('open');
+}
+function closeEditResModal() {
+  document.getElementById('editResModal').classList.remove('open');
+}
+function saveEditRes() {
+  const id = document.getElementById('editResId').value;
+  const status = document.getElementById('editResStatus').value;
+  fetch('reservering_ajax.php', { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id, status}) })
+  .then(r=>r.json()).then(d=>{
+    if(d.success){ toast('Reservering bijgewerkt!'); fetchReserveringen(); closeEditResModal(); }
+    else toast(d.error, 'error');
+  });
+}
+function addReservering() {
+  const voornaam = document.getElementById('resVoornaam').value.trim();
+  const tussenvoegsel = document.getElementById('resTussenvoegsel').value.trim();
+  const achternaam = document.getElementById('resAchternaam').value.trim();
+  const datum = document.getElementById('resDatum').value;
+  const tijd = document.getElementById('resTijd').value;
+  if(!voornaam || !achternaam || !datum || !tijd) return toast('Vul alle verplichte velden in!', 'error');
+  fetch('reservering_ajax.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({voornaam, tussenvoegsel, achternaam, datum, tijd}) })
+  .then(r=>r.json()).then(d=>{
+    if(d.success){ toast('Reservering geplaatst!'); fetchReserveringen(); }
+    else toast(d.error, 'error');
+  });
+}
+function deleteReservering(id) {
+  if(!confirm('Reservering annuleren?')) return;
+  fetch('reservering_ajax.php?id='+id, { method: 'DELETE' }).then(r=>r.json()).then(d=>{
+    if(d.success){ toast('Geannuleerd!'); fetchReserveringen(); } else toast(d.error, 'error');
+  });
+}
+
+// ═══════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════
-renderDashLessen();
-updateLedenCount();
+fetchAlleGebruikers();
+updateLedenStats();
 </script>
 </body>
 </html>
